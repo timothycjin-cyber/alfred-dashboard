@@ -8,7 +8,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
-  /* Soft, warm cream background and minimalist base font matching Money Mama */
+  /* */
   body { 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
     background: #f9f9f6; 
@@ -17,7 +17,6 @@
     padding-bottom: 105px; 
   }
 
-  /* Streamlined Header Zone */
   .header { 
     background: #fff; 
     padding: 1.25rem 1.5rem; 
@@ -32,7 +31,6 @@
   .header-left { display: flex; align-items: center; gap: 12px; }
   .header-title { font-size: 19px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.3px; }
   
-  /* Minimal Dropdown Styling */
   .month-select { 
     font-size: 13px; 
     padding: 5px 10px; 
@@ -45,7 +43,6 @@
     outline: none; 
   }
   
-  /* Pixel-centered SVG refresh button */
   .refresh-btn { 
     width: 36px; 
     height: 36px; 
@@ -63,7 +60,7 @@
   }
   .refresh-btn:hover { background: #f5f5f0; }
 
-  /* Floating Bottom Navigation Pill with snappy sliding slider mechanics */
+  /* */
   .floating-nav { 
     position: fixed; 
     bottom: 24px; 
@@ -107,7 +104,6 @@
     pointer-events: none; 
   }
 
-  /* Core Floating Action Button (FAB) Setup */
   .fab-btn {
     position: fixed;
     bottom: 24px;
@@ -129,7 +125,7 @@
   }
   .fab-btn:active { transform: scale(0.9); }
 
-  /* Drawer Overlay Systems */
+  /* */
   .drawer-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -161,7 +157,6 @@
   .drawer-header { font-size: 16px; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
   .drawer-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
 
-  /* Financial Form System Components */
   .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
   .form-label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
   .form-input, .form-select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e8e8e4; font-size: 14px; outline: none; background: #fafaf9; }
@@ -169,13 +164,9 @@
   
   .btn-row { display: flex; gap: 10px; margin-top: 1.25rem; }
   .btn-main { flex: 1; padding: 12px; background: #1a1a1a; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-main:disabled { background: #666; cursor: not-allowed; }
-  .btn-secondary { padding: 10px 14px; background: #FFF0F0; color: #FF6B6B; border: 1px solid #FFE0E0; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 12px; transition: all 0.2s; }
-  .btn-secondary:hover { background: #FFE5E5; }
-  .btn-secondary:disabled { background: #f5f5f0; color: #aaa; border-color: #e8e8e4; cursor: not-allowed; }
   .btn-danger { flex: 1; padding: 12px; background: #fff; color: #FF6B6B; border: 1px solid #e8e8e4; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 
-  /* Notification Alert Panel */
+  /* */
   .toast-banner {
     position: fixed;
     top: 20px;
@@ -208,7 +199,6 @@
     .metric-grid.home-grid .balance-card { grid-column: span 2; }
     .metric-grid.analytics-grid { grid-template-columns: repeat(2, 1fr); }
   }
-  .metric-grid.analytics-grid { grid-template-columns: repeat(2, 1fr); }
 
   .metric { background: #fff; border-radius: 14px; padding: 0.75rem 0.5rem; border: 1px solid #e8e8e4; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 80px; }
   .metric-label { font-size: 10px; color: #888; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -221,7 +211,6 @@
     .metric-sub { font-size: 10px; }
     .metric { padding: 1rem 0.5rem; min-height: 90px; }
   }
-  @media (min-width: 400px) { .metric-val { font-size: 17px; } }
 
   .metric.crystal-ball { background: radial-gradient(circle at 85% 15%, #fff 0%, #faf9fc 60%, #f5f0ff 100%); border-color: #e1d8ff; }
 
@@ -232,9 +221,7 @@
   .card-title { font-size: 12px; font-weight: 600; margin-bottom: 14px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px; }
 
   .custom-pill-legend { display: flex; gap: 12px; justify-content: center; margin-top: 10px; width: 100%; }
-  .pill-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #666; padding: 4px 14px; border-radius: 20px; border: 1px solid #e8e8e4; background: #fff; }
-  .pill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
+  
   .legend-side-box { display: flex; flex-direction: column; gap: 8px; justify-content: center; margin-top: 12px; }
   @media (min-width: 480px) {
     .donut-layout { display: flex; align-items: center; gap: 14px; }
@@ -251,6 +238,7 @@
   .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
   .cat-amt { font-size: 12px; font-weight: 600; width: 72px; text-align: right; flex-shrink: 0; }
 
+  /* */
   .date-group-header { font-size: 12px; font-weight: 700; color: #888; margin: 1.5rem 0 0.5rem 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
   .txn-list { border-radius: 14px; border: 1px solid #e8e8e4; background: #fff; overflow: hidden; margin-bottom: 0.5rem; }
   
@@ -488,8 +476,7 @@
 </div>
 
 <script>
-// ─── STREAMING_CHUNK: Initializing state configurations... ───
-const APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwAtrD-a9qht6e_yvzhawAdhNHY73e9Tbuj2Jsmi6YmjlRiAauop2r9rVe71wLBW9Hj/exec";
+//const APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwAtrD-a9qht6e_yvzhawAdhNHY73e9Tbuj2Jsmi6YmjlRiAauop2r9rVe71wLBW9Hj/exec";
 
 const SHEET_ID = "19_C3gFlY7hDjGm87k3Uke63_Tgg6TQPl6xLiGZvuEis";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Sheet1`;
@@ -521,7 +508,7 @@ function showToast(message, isError = false) {
   toast.innerText = message;
   toast.style.background = isError ? '#FF6B6B' : '#1a1a1a';
   toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  setTimeout(() => { toast.classList.remove('show'); }, 4500); // Extended slightly to let users read detailed error logs
 }
 
 Chart.Tooltip.positioners.thisMonthOnly = function(elements) {
@@ -576,8 +563,7 @@ async function init() {
   }
 }
 
-// ─── STREAMING_CHUNK: Managing tab layouts and active views... ───
-function switchView(view) {
+//function switchView(view) {
   window.scrollTo(0, 0);
   currentView = view;
   document.querySelectorAll('.nav-btn').forEach(t => t.classList.remove('active'));
@@ -605,8 +591,7 @@ function handleMonthDropdown(val) {
   calculateAndRender();
 }
 
-// ─── DRAWER PANEL INTERACTION SCRIPTS ───
-function openAddDrawer() {
+//function openAddDrawer() {
   document.getElementById('add-drawer-overlay').classList.add('active');
   document.getElementById('add-drawer-panel').classList.add('active');
 }
@@ -645,8 +630,7 @@ function closeEditDrawer() {
   document.getElementById('edit-drawer-panel').classList.remove('active');
 }
 
-// ─── STREAMING_CHUNK: Defining transaction submissions and updates... ───
-async function submitAddTransaction() {
+//async function submitAddTransaction() {
   const payload = {
     action: "add",
     amount: parseFloat(document.getElementById('manual-amount').value),
@@ -721,8 +705,7 @@ function executeUpdate() {
   executeWebhookTransaction(payload);
 }
 
-// ─── STREAMING_CHUNK: Processing webhook AJAX pipeline fetches... ───
-async function executeWebhookTransaction(payload) {
+//async function executeWebhookTransaction(payload) {
   if (APPS_SCRIPT_WEBHOOK_URL.includes("YOUR_APPS_SCRIPT")) {
     showToast("Web app URL missing! Check manual console logs.", true);
     console.log("Mock Intercept Transaction Action:", payload);
@@ -730,17 +713,26 @@ async function executeWebhookTransaction(payload) {
   }
   document.getElementById('main-loader').style.display = 'flex';
   try {
-    // Standard fetch POST using text/plain to bypass OPTIONS preflight CORS checks entirely
-    await fetch(APPS_SCRIPT_WEBHOOK_URL, {
+    // Standard text/plain submission bypasses preflight checks entirely.
+    // We REMOVED no-cors so we can actively parse responses and capture errors.
+    const res = await fetch(APPS_SCRIPT_WEBHOOK_URL, {
       method: "POST",
-      mode: "no-cors", 
       headers: { "Content-Type": "text/plain; charset=utf-8" },
       body: JSON.stringify(payload)
     });
-    showToast("Spreadsheet update queued successfully.");
-    setTimeout(() => { init(); }, 2000); // 2 second sync delay to allow row appending to settle
+    
+    const result = await res.json();
+    
+    if (result.status === "error") {
+      showToast("Sync Error: " + result.message, true);
+      document.getElementById('main-loader').style.display = 'none';
+      return;
+    }
+    
+    showToast("Spreadsheet updated successfully.");
+    setTimeout(() => { init(); }, 2000); // 2 second sync delay to allow row changes to settle
   } catch(e) {
-    showToast("Failed to connect to spreadsheet pipeline.", true);
+    showToast("Network exception: Ensure web app URL is deployed & active.", true);
     document.getElementById('main-loader').style.display = 'none';
   }
 }
