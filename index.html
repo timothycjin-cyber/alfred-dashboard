@@ -7,35 +7,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; padding-bottom: 80px; }
 
-  .header { background: #fff; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 10; }
+  .header { background: #fff; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #e8e8e4; }
+  .header-left { display: flex; flex-direction: column; }
+  .header-title-row { display: flex; align-items: center; gap: 10px; }
   .header-title { font-size: 18px; font-weight: 500; }
   .header-sub { font-size: 13px; color: #888; margin-top: 2px; }
   .refresh-btn { font-size: 13px; padding: 6px 14px; border-radius: 8px; border: 1px solid #ddd; background: transparent; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; }
   .refresh-btn:hover { background: #f5f5f0; }
 
-  /* Navigation Bar Interface */
-  .nav-bar { background: #fff; border-bottom: 1px solid #e8e8e4; padding: 0 1.5rem; display: flex; gap: 24px; }
-  .nav-tab { background: none; border: none; padding: 1rem 0; font-size: 14px; font-weight: 500; color: #888; cursor: pointer; position: relative; }
-  .nav-tab.active { color: #1a1a1a; }
-  .nav-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: #1a1a1a; border-radius: 3px 3px 0 0; }
+  /* Dropdown Selector instead of raw horizontal buttons */
+  .month-select { font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #333; cursor: pointer; font-weight: 500; }
+
+  /* Floating Bottom Navigation Pill */
+  .floating-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(26, 26, 26, 0.95); backdrop-filter: blur(8px); border-radius: 30px; display: flex; align-items: center; padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 100; width: 280px; border: 1px solid rgba(255,255,255,0.1); }
+  .nav-half { flex: 1; background: none; border: none; color: #aaa; font-size: 13px; font-weight: 500; padding: 10px 0; cursor: pointer; text-align: center; border-radius: 25px; transition: all 0.2s ease; }
+  .nav-half.active { color: #fff; background: rgba(255, 255, 255, 0.15); }
+  .nav-divider { width: 1px; height: 20px; background: rgba(255, 255, 255, 0.2); }
 
   .container { max-width: 900px; margin: 0 auto; padding: 1.25rem 1rem; }
-
-  .month-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-  .tab { font-size: 12px; padding: 5px 14px; border-radius: 8px; border: 1px solid #ddd; background: transparent; color: #888; cursor: pointer; }
-  .tab.active { background: #1a1a1a; color: #fff; border-color: transparent; }
 
   /* Views State Controllers */
   .view-section { display: none; }
   .view-section.active { display: block; }
 
-  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
-  .metric { background: #fff; border-radius: 10px; padding: 1rem; border: 1px solid #e8e8e4; }
-  .metric-label { font-size: 12px; color: #888; margin-bottom: 4px; }
-  .metric-val { font-size: 22px; font-weight: 500; }
-  .metric-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+  /* Metric Grid: Row on Mobile, Grid on Desktop */
+  .metric-grid { display: flex; gap: 10px; margin-bottom: 1.25rem; width: 100%; overflow-x: auto; padding-bottom: 4px; }
+  .metric { background: #fff; border-radius: 10px; padding: 0.75rem 1rem; border: 1px solid #e8e8e4; flex: 1; min-width: 140px; }
+  .metric-label { font-size: 11px; color: #888; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-val { font-size: 18px; font-weight: 600; white-space: nowrap; }
+  .metric-sub { font-size: 11px; color: #aaa; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Crystal ball thematic customization */
+  .metric.crystal-ball { background: radial-gradient(circle at 80% 20%, #fff 0%, #faf8ff 60%, #f0ebff 100%); border: 1px solid #dcd3ff; }
 
   .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 1.25rem; }
   @media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
@@ -53,13 +58,18 @@
   .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
   .cat-amt { font-size: 12px; font-weight: 500; width: 72px; text-align: right; flex-shrink: 0; }
 
-  /* Grouped Transaction Layout */
-  .date-group-header { font-size: 13px; font-weight: 600; color: #555; margin: 1.5rem 0 0.5rem 0.25rem; }
+  /* Consistent Grouped Timelines */
+  .date-group-header { font-size: 12px; font-weight: 600; color: #666; margin: 1.25rem 0 0.5rem 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
   .txn-list { border-radius: 12px; border: 1px solid #e8e8e4; background: #fff; overflow: hidden; margin-bottom: 0.5rem; }
   .txn-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 1.25rem; border-bottom: 1px solid #f0f0ec; }
   .txn-row:last-child { border-bottom: none; }
   .txn-left { display: flex; align-items: center; gap: 10px; }
-  .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 500; white-space: nowrap; }
+  
+  /* Unified Bordered Badges */
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 500; white-space: nowrap; background: transparent; border-width: 1px; border-style: solid; }
+  .badge.inc-badge { color: #1D9E75; border-color: #1D9E75; }
+  .badge.exp-badge { color: #D4537E; border-color: #D4537E; }
+
   .txn-desc { font-size: 13px; font-weight: 500; }
   .txn-meta { font-size: 11px; color: #aaa; margin-top: 1px; }
   .txn-amt { font-size: 13px; font-weight: 600; }
@@ -68,50 +78,48 @@
 
   .empty { text-align: center; padding: 3rem 1rem; color: #aaa; }
   .empty-icon { font-size: 36px; margin-bottom: 12px; }
-  .loading { text-align: center; padding: 4rem 1rem; color: #aaa; font-size: 14px; }
-  .spinner { width: 32px; height: 32px; border: 2px solid #e8e8e4; border-top-color: #1D9E75; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error-banner { background: #fff3f3; border: 1px solid #fcc; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; font-size: 13px; color: #c00; }
 
   @media (prefers-color-scheme: dark) {
     body { background: #1a1a1a; color: #e8e8e4; }
-    .header, .nav-bar, .metric, .card, .txn-list { background: #242424; border-color: #333; }
-    .nav-tab.active { color: #e8e8e4; }
-    .nav-tab.active::after { background: #e8e8e4; }
-    .tab { border-color: #444; color: #aaa; }
-    .tab.active { background: #e8e8e4; color: #1a1a1a; }
-    .refresh-btn { border-color: #444; color: #aaa; }
-    .refresh-btn:hover { background: #2a2a2a; }
+    .header, .metric, .card, .txn-list, .month-select { background: #242424; border-color: #333; color: #e8e8e4; }
+    .floating-nav { background: rgba(36, 36, 36, 0.95); }
     .cat-bar-bg { background: #2a2a2a; }
     .txn-row { border-color: #2a2a2a; }
     .date-group-header { color: #aaa; }
     .txn-amt.expense { color: #e8e8e4; }
+    .metric.crystal-ball { background: radial-gradient(circle at 80% 20%, #2c2545 0%, #242424 80%); border-color: #4a3b80; }
   }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div>
-    <div class="header-title">Project Alfred</div>
-    <div class="header-sub" id="header-sub">Loading…</div>
+  <div class="header-left">
+    <div class="header-title-row">
+      <div class="header-title">Project Alfred</div>
+      <!-- Month Selector Anchor Placeholder -->
+      <select id="month-select-element" class="month-select" onchange="handleMonthDropdown(this.value)"></select>
+    </div>
+    <div class="header-sub" id="header-sub">Parsing sheets…</div>
   </div>
   <button class="refresh-btn" onclick="init()">↻ Refresh</button>
 </div>
 
-<div class="nav-bar">
-  <button class="nav-tab active" id="tab-home" onclick="switchView('home')">🏠 Home</button>
-  <button class="nav-tab" id="tab-analytics" onclick="switchView('analytics')">📈 Analytics</button>
+<!-- Floating Navigation Pill Component -->
+<div class="floating-nav">
+  <button class="nav-half active" id="tab-home" onclick="switchView('home')">🏠 Home</button>
+  <div class="nav-divider"></div>
+  <button class="nav-half" id="tab-analytics" onclick="switchView('analytics')">📈 Analytics</button>
 </div>
 
 <div class="container">
-  <div id="month-tabs-container"></div>
-
+  <!-- Home Workspace View -->
   <div id="home-view" class="view-section active">
     <div id="home-metrics"></div>
     <div id="home-timeline"></div>
   </div>
 
+  <!-- Analytics Workspace View -->
   <div id="analytics-view" class="view-section">
     <div id="analytics-metrics"></div>
     <div class="charts-row">
@@ -175,17 +183,17 @@ async function init() {
         Source: r.c[4]?.v || "telegram",
         Type: r.c[5]?.v ? String(r.c[5].v).trim() : "Expense"
       }));
-    renderTabs();
+    renderDropdownOptions();
     calculateAndRender();
   } catch(e) {
-    document.getElementById('home-view').innerHTML = `<div class="error-banner">⚠️ Could not read Google Sheet data.<br>Error: ${e.message}</div>`;
-    document.getElementById('header-sub').textContent = "Error loading connection paths";
+    document.getElementById('home-view').innerHTML = `<div class="error-banner">⚠️ Sheet pipeline error.<br>Error: ${e.message}</div>`;
+    document.getElementById('header-sub').textContent = "Connection drop";
   }
 }
 
 function switchView(view) {
   currentView = view;
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-half').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
   
   document.getElementById(`tab-${view}`).classList.add('active');
@@ -194,30 +202,27 @@ function switchView(view) {
   calculateAndRender();
 }
 
-function renderTabs() {
+function renderDropdownOptions() {
   const now = new Date();
-  const tabMonths = [];
+  let dropdownHtml = '';
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    tabMonths.push({ mo: d.getMonth(), yr: d.getFullYear(), label: MONTHS[d.getMonth()] });
+    const valString = `${d.getFullYear()}-${d.getMonth()}`;
+    const selected = (d.getMonth() === activeMonth && d.getFullYear() === activeYear) ? 'selected' : '';
+    dropdownHtml += `<option value="${valString}" ${selected}>${MONTHS[d.getMonth()]} ${d.getFullYear()}</option>`;
   }
-  
-  document.getElementById('month-tabs-container').innerHTML = `
-    <div class="month-tabs">
-      ${tabMonths.map(t => `<button class="tab ${t.mo === activeMonth && t.yr === activeYear ? 'active' : ''}" onclick="switchMonth(${t.mo},${t.yr})">${t.label}</button>`).join('')}
-    </div>
-  `;
+  document.getElementById('month-select-element').innerHTML = dropdownHtml;
 }
 
-function switchMonth(mo, yr) {
-  activeMonth = mo;
-  activeYear = yr;
-  renderTabs();
+function handleMonthDropdown(val) {
+  const parts = val.split('-');
+  activeYear = parseInt(parts[0]);
+  activeMonth = parseInt(parts[1]);
   calculateAndRender();
 }
 
 function calculateAndRender() {
-  document.getElementById('header-sub').textContent = `${allRows.length} total transactions found`;
+  document.getElementById('header-sub').textContent = `${allRows.length} transactions mapped`;
 
   const rows = allRows.filter(r => {
     const d = new Date(r.Date);
@@ -234,7 +239,7 @@ function calculateAndRender() {
   const catData = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
   const maxCat = catData[0]?.[1] || 1;
 
-  // ── HOME VIEW RENDERER ──
+  // ── HOME TAB GENERATOR ──
   if (currentView === 'home') {
     const balanceCheekySub = netBalance >= 0 ? "In the green! 🎉" : "Watching the leak ⚠️";
     document.getElementById('home-metrics').innerHTML = `
@@ -245,7 +250,7 @@ function calculateAndRender() {
           <div class="metric-sub">${rows.filter(r => r.Type === "Income").length} entries logged</div>
         </div>
         <div class="metric">
-          <div class="metric-label">Expenses</div>
+          <div class="metric-label" style="color: #D4537E;">Expenses</div>
           <div class="metric-val">RM ${totalExpense.toFixed(2)}</div>
           <div class="metric-sub">${expenseRows.length} entries logged</div>
         </div>
@@ -258,7 +263,7 @@ function calculateAndRender() {
     `;
 
     if (!rows.length) {
-      document.getElementById('home-timeline').innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No transactions this month yet.</div>';
+      document.getElementById('home-timeline').innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No entries this period.</div>';
     } else {
       const sortedRows = [...rows].sort((a, b) => new Date(b.Date) - new Date(a.Date));
       const groups = {};
@@ -274,12 +279,12 @@ function calculateAndRender() {
         timelineHtml += `<div class="date-group-header">${dateStr}</div><div class="txn-list">`;
         timelineHtml += records.map(r => {
           const isInc = r.Type === "Income";
-          const c = CAT_COLORS[r.Category] || CAT_COLORS["Other"];
+          const displayTag = isInc ? 'Income' : r.Category.split(' ')[0];
           return `
             <div class="txn-row">
               <div class="txn-left">
-                <span class="badge" style="background:${isInc ? '#E1F5EE' : c.light}; color:${isInc ? '#0F6E56' : c.text}; border: ${isInc ? '1px solid #1D9E75' : 'none'}">
-                  ${isInc ? 'Income' : r.Category.split(' ')[0]}
+                <span class="badge ${isInc ? 'inc-badge' : 'exp-badge'}">
+                  ${displayTag}
                 </span>
                 <div>
                   <div class="txn-desc">${r.Description}</div>
@@ -298,7 +303,7 @@ function calculateAndRender() {
     }
   }
 
-  // ── ANALYTICS VIEW RENDERER ──
+  // ── ANALYTICS TAB GENERATOR ──
   if (currentView === 'analytics') {
     const today = new Date();
     const daysInMonth = new Date(activeYear, activeMonth + 1, 0).getDate();
@@ -321,11 +326,11 @@ function calculateAndRender() {
         <div class="metric">
           <div class="metric-label">Days Elapsed</div>
           <div class="metric-val">${percentageElapsed}%</div>
-          <div class="metric-sub">Survival rate: ${daysElapsed} of ${daysInMonth} days passed</div>
+          <div class="metric-sub">Survival rate: ${daysElapsed}/${daysInMonth}d</div>
         </div>
-        <div class="metric">
-          <div class="metric-label">Projected Month-End Spend</div>
-          <div class="metric-val" style="color: #BA7517;">RM ${projectedEndSpend.toFixed(2)}</div>
+        <div class="metric crystal-ball">
+          <div class="metric-label" style="color: #6449cf;">🔮 Forecasted Spend</div>
+          <div class="metric-val" style="color: #4a3b80;">RM ${projectedEndSpend.toFixed(2)}</div>
           <div class="metric-sub">Where you're landing 🛬</div>
         </div>
       </div>
@@ -346,7 +351,7 @@ function calculateAndRender() {
           <span class="cat-amt">RM ${val.toFixed(2)}</span>
         </div>
       `;
-    }).join('') : '<div style="color:#aaa; font-size:13px; padding: 10px;">No expenses for this period.</div>';
+    }).join('') : '<div style="color:#aaa; font-size:13px; padding: 10px;">No expense history.</div>';
 
     if (donutChart) donutChart.destroy();
     if (catData.length) {
@@ -360,7 +365,7 @@ function calculateAndRender() {
       });
     }
 
-    // Cumulative Line Chart Assembly
+    // Cumulative Spend Analytics Computation Lines
     let lastMo = activeMonth - 1;
     let lastYr = activeYear;
     if (lastMo < 0) { lastMo = 11; lastYr -= 1; }
