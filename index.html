@@ -9,7 +9,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   /* Soft, warm cream background and minimalist base font */
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f6; color: #1a1a1a; min-height: 100vh; padding-bottom: 95px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f6; color: #1a1a1a; min-height: 100vh; padding-bottom: 105px; }
 
   /* Streamlined Header Zone */
   .header { background: #fff; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #e8e8e4; }
@@ -19,14 +19,15 @@
   /* Minimal Dropdown Styling */
   .month-select { font-size: 13px; padding: 5px 10px; border-radius: 8px; border: 1px solid #e8e8e4; background: #fff; color: #1a1a1a; cursor: pointer; font-weight: 600; outline: none; }
   
-  /* Icon-only minimal refresh button */
-  .refresh-btn { font-size: 18px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e8e8e4; background: transparent; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  /* Pixel-centered icon-only minimal refresh button */
+  .refresh-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e8e8e4; background: transparent; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; padding: 0; }
   .refresh-btn:hover { background: #f5f5f0; }
 
-  /* Floating Bottom Navigation Pill (No divider line) */
-  .floating-nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(26, 26, 26, 0.96); backdrop-filter: blur(10px); border-radius: 30px; display: flex; align-items: center; padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 100; width: 280px; border: 1px solid rgba(255,255,255,0.08); }
-  .nav-half { flex: 1; background: none; border: none; color: #aaa; font-size: 13px; font-weight: 600; padding: 11px 0; cursor: pointer; text-align: center; border-radius: 25px; transition: all 0.2s ease; }
-  .nav-half.active { color: #fff; background: rgba(255, 255, 255, 0.15); }
+  /* Floating Bottom Navigation Pill (With interactive snappy sliding bounce container) */
+  .floating-nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border-radius: 30px; display: flex; align-items: center; padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 100; width: 260px; height: 50px; position: fixed; }
+  .nav-btn { flex: 1; border: none; background: transparent; color: #aaa; font-size: 13px; font-weight: 600; cursor: pointer; height: 100%; z-index: 2; transition: color 0.3s ease; outline: none; -webkit-tap-highlight-color: transparent; }
+  .nav-btn.active { color: #fff; }
+  .nav-slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: rgba(255,255,255,0.15); border-radius: 25px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1; pointer-events: none; }
 
   .container { max-width: 900px; margin: 0 auto; padding: 1.25rem 1rem; }
   .view-section { display: none; }
@@ -62,7 +63,7 @@
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #666; font-weight: 500; }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-  .cat-row { display: flex; align-items: center; gap: 8px; }
+  .cat-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
   .cat-name { font-size: 12px; color: #666; font-weight: 500; width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cat-bar-bg { flex: 1; height: 6px; border-radius: 3px; background: #f2f2ee; overflow: hidden; }
   .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
@@ -81,7 +82,6 @@
   .badge.exp-badge { color: #D4537E; border-color: #D4537E; }
 
   .txn-desc { font-size: 13.5px; font-weight: 600; color: #1a1a1a; }
-  .txn-meta { font-size: 11px; color: #aaa; margin-top: 2px; font-weight: 500; }
   .txn-amt { font-size: 13.5px; font-weight: 700; }
   .txn-amt.income { color: #1D9E75; }
   .txn-amt.expense { color: #D4537E; }
@@ -92,7 +92,7 @@
   @media (prefers-color-scheme: dark) {
     body { background: #141412; color: #e3e3df; }
     .header, .metric, .card, .txn-list, .month-select { background: #1e1e1c; border-color: #2c2c2a; color: #e3e3df; }
-    .floating-nav { background: rgba(30, 30, 28, 0.96); }
+    .floating-nav { background: #262624; }
     .cat-bar-bg { background: #2c2c2a; }
     .txn-row { border-color: #2c2c2a; }
     .txn-desc, .card-title { color: #e3e3df; }
@@ -109,26 +109,25 @@
       <select id="month-select-element" class="month-select" onchange="handleMonthDropdown(this.value)"></select>
     </div>
   </div>
-  <!-- Simplified icon-only refresh interface -->
-  <button class="refresh-btn" onclick="init()">↻</button>
+  <button class="refresh-btn" onclick="init()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 1 1 0 6M20.49 15a9 9 0 1 1 0-6"/></svg>
+  </button>
 </div>
 
-<!-- Floating Navigation Pill (Without central divider border) -->
 <div class="floating-nav">
-  <button class="nav-half active" id="tab-home" onclick="switchView('home')">🏠 Home</button>
-  <button class="nav-half" id="tab-analytics" onclick="switchView('analytics')">📈 Analytics</button>
+  <div id="nav-slider" class="nav-slider"></div>
+  <button class="nav-btn active" id="tab-home" onclick="switchView('home')">Home</button>
+  <button class="nav-btn" id="tab-analytics" onclick="switchView('analytics')">Analytics</button>
 </div>
 
 <div class="container">
-  <!-- Home Sub-View Tab Container -->
   <div id="home-view" class="view-section active">
-    <div id="home-metrics"></div>
+    <div id="home-metrics" class="metric-grid home-grid"></div>
     <div id="home-timeline"></div>
   </div>
 
-  <!-- Analytics Sub-View Tab Container -->
   <div id="analytics-view" class="view-section">
-    <div id="analytics-metrics"></div>
+    <div id="analytics-metrics" class="metric-grid analytics-grid"></div>
     <div class="charts-row">
       <div class="card">
         <div class="card-title">Cumulative Spend Timeline</div>
@@ -187,23 +186,28 @@ async function init() {
         Amount: Number(r.c[1].v),
         Category: r.c[2]?.v || "Other",
         Description: r.c[3]?.v || "",
-        Source: r.c[4]?.v || "telegram",
         Type: r.c[5]?.v ? String(r.c[5].v).trim() : "Expense"
       }));
     renderDropdownOptions();
     calculateAndRender();
   } catch(e) {
-    document.getElementById('home-view').innerHTML = `<div class="style: background:#fff3f3; color:#c00; padding:15px; border-radius:10px;">⚠️ Connection interrupted.<br>Error: ${e.message}</div>`;
+    document.getElementById('home-view').innerHTML = `<div style="background:#fff3f3; color:#c00; padding:15px; border-radius:10px;">⚠️ Connection interrupted.<br>Error: ${e.message}</div>`;
   }
 }
 
 function switchView(view) {
+  // Reset window position straight back to the top anchor
+  window.scrollTo(0, 0);
+  
   currentView = view;
-  document.querySelectorAll('.nav-half').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
   
   document.getElementById(`tab-${view}`).classList.add('active');
   document.getElementById(`${view}-view`).classList.add('active');
+  
+  // Slide out active toggle slider anchor position
+  document.getElementById('nav-slider').style.transform = (view === 'analytics') ? 'translateX(100%)' : 'translateX(0)';
   
   calculateAndRender();
 }
@@ -247,22 +251,20 @@ function calculateAndRender() {
   if (currentView === 'home') {
     const balanceCheekySub = netBalance >= 0 ? "In the green! 🎉" : "Watching the leak ⚠️";
     document.getElementById('home-metrics').innerHTML = `
-      <div class="metric-grid home-grid">
-        <div class="metric">
-          <div class="metric-label">Income</div>
-          <div class="metric-val" style="color: #1D9E75;">RM ${totalIncome.toFixed(2)}</div>
-          <div class="metric-sub">${rows.filter(r => r.Type === "Income").length} items</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Expenses</div>
-          <div class="metric-val" style="color: #D4537E;">RM ${totalExpense.toFixed(2)}</div>
-          <div class="metric-sub">${expenseRows.length} items</div>
-        </div>
-        <div class="metric balance-card">
-          <div class="metric-label">Net Balance</div>
-          <div class="metric-val" style="color: ${netBalance >= 0 ? '#1D9E75' : '#D4537E'};">RM ${netBalance.toFixed(2)}</div>
-          <div class="metric-sub">${balanceCheekySub}</div>
-        </div>
+      <div class="metric">
+        <div class="metric-label">Income</div>
+        <div class="metric-val" style="color: #1D9E75;">RM ${totalIncome.toFixed(2)}</div>
+        <div class="metric-sub">${rows.filter(r => r.Type === "Income").length} items</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Expenses</div>
+        <div class="metric-val" style="color: #D4537E;">RM ${totalExpense.toFixed(2)}</div>
+        <div class="metric-sub">${expenseRows.length} items</div>
+      </div>
+      <div class="metric balance-card">
+        <div class="metric-label">Net Balance</div>
+        <div class="metric-val" style="color: ${netBalance >= 0 ? '#1D9E75' : '#D4537E'};">RM ${netBalance.toFixed(2)}</div>
+        <div class="metric-sub">${balanceCheekySub}</div>
       </div>
     `;
 
@@ -272,7 +274,7 @@ function calculateAndRender() {
       const sortedRows = [...rows].sort((a, b) => new Date(b.Date) - new Date(a.Date));
       const groups = {};
       sortedRows.forEach(r => {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const options = { weekday: 'long', month: 'short', day: 'numeric' };
         const dateHeader = new Date(r.Date).toLocaleDateString('en-US', options);
         if (!groups[dateHeader]) groups[dateHeader] = [];
         groups[dateHeader].push(r);
@@ -290,10 +292,7 @@ function calculateAndRender() {
                 <span class="badge ${isInc ? 'inc-badge' : 'exp-badge'}">
                   ${displayTag}
                 </span>
-                <div>
-                  <div class="txn-desc">${r.Description}</div>
-                  <div class="txn-meta">via ${r.Source}</div>
-                </div>
+                <div class="txn-desc">${r.Description}</div>
               </div>
               <span class="txn-amt" style="color: ${isInc ? '#1D9E75' : '#D4537E'}">
                 ${isInc ? '+' : ''}RM ${r.Amount.toFixed(2)}
@@ -319,17 +318,15 @@ function calculateAndRender() {
     const burnCheekySub = dailyBurnRate > 100 ? "A bit of a splurge? 💸" : "Keeping it chill 🧊";
 
     document.getElementById('analytics-metrics').innerHTML = `
-      <div class="metric-grid analytics-grid">
-        <div class="metric">
-          <div class="metric-label">Average Daily Spend</div>
-          <div class="metric-val" style="color: #D4537E;">RM ${dailyBurnRate.toFixed(2)}/day</div>
-          <div class="metric-sub">${burnCheekySub}</div>
-        </div>
-        <div class="metric crystal-ball">
-          <div class="metric-label" style="color: #7F77DD;">🔮 Forecasted Spend</div>
-          <div class="metric-val" style="color: #534AB7;">RM ${projectedEndSpend.toFixed(2)}</div>
-          <div class="metric-sub">Where you're landing 🛬</div>
-        </div>
+      <div class="metric">
+        <div class="metric-label">Average Daily Spend</div>
+        <div class="metric-val" style="color: #D4537E;">RM ${dailyBurnRate.toFixed(2)}/day</div>
+        <div class="metric-sub">${burnCheekySub}</div>
+      </div>
+      <div class="metric crystal-ball">
+        <div class="metric-label" style="color: #7F77DD;">🔮 Forecasted Spend</div>
+        <div class="metric-val" style="color: #534AB7;">RM ${projectedEndSpend.toFixed(2)}</div>
+        <div class="metric-sub">Where you're landing 🛬</div>
       </div>
     `;
 
