@@ -235,10 +235,11 @@
   .txn-details { display: flex; flex-direction: column; gap: 2px; }
   .txn-badge-container { display: flex; margin-top: 1px; }
 
-  /* Daily Spent Total Row Footer with left accent bar */
+  /* Daily Spent Total Row Footer with left accent bar closer to "Spent" label */
   .txn-footer {
     background: #fafaf9;
-    padding: 11px 1.25rem;
+    padding: 11px 1.25rem 11px 1.45rem; /* Reduced spacing inside to fit the floating bar beautifully */
+    position: relative; /* Setup anchors for the custom floating bar element */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -246,10 +247,22 @@
     font-weight: 700;
     color: #666;
     border-top: 1px solid #f5f5f0;
-    border-left: 4px solid #FF6B6B; /* Unified vibrant red color */
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
+  
+  /* Custom floating red vertical bar closer to text, shaved off at top and bottom edges */
+  .txn-footer::before {
+    content: '';
+    position: absolute;
+    left: 10px; /* Moves it slightly closer to the "SPENT" content text block */
+    top: 8px;   /* Shaves off top margin boundary to float cleanly */
+    bottom: 8px;/* Shaves off bottom margin boundary */
+    width: 4px;
+    background-color: #FF6B6B; /* Unified premium vibrant red color */
+    border-radius: 3px; /* Clean capsule rounding at ends */
+  }
+  
   .txn-footer-amt {
     color: #FF6B6B; 
     font-size: 13.5px;
