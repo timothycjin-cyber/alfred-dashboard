@@ -346,6 +346,16 @@ const centerTextPlugin = {
 };
 Chart.register(centerTextPlugin);
 
+// Correctly parses gviz date strings like "Date(2026,5,27)" → "2026-06-27"
+// Month is 0-indexed in gviz. Year must NOT be padded (was the bug causing row-match failures).
+function parseGvizDate(raw) {
+  const parts = raw.replace("Date(", "").replace(")", "").split(",");
+  const year  = parts[0].trim();                               // keep full 4-digit year
+  const month = String(Number(parts[1].trim()) + 1).padStart(2, "0"); // 0-indexed → 1-indexed
+  const day   = String(Number(parts[2].trim())).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 async function init() {
   document.getElementById('main-loader').style.display = 'flex';
   try {
@@ -355,7 +365,7 @@ async function init() {
     allRows = json.table.rows
       .filter(r => r.c[0]?.v && r.c[1]?.v)
       .map(r => ({
-        Date: r.c[0].v.replace("Date(", "").replace(")", "").split(",").map((v,i) => i===1 ? String(Number(v)+1).padStart(2,"0") : String(v).padStart(2,"0")).join("-"),
+        Date: parseGvizDate(r.c[0].v),
         Amount: Number(r.c[1].v),
         Category: r.c[2]?.v || "Other",
         Description: r.c[3]?.v || "",
