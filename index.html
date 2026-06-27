@@ -348,18 +348,37 @@ Chart.register(centerTextPlugin);
 
 // Correctly parses gviz date strings like "Date(2026,5,27)" → "2026-06-27"
 // Month is 0-indexed in gviz. Year must NOT be padded (was the bug causing row-match failures).
+// Handles all date formats gviz returns depending on how the date was stored:
+// 1. "Date(2026,5,27)"  — gviz serial for dates stored as actual Date type
+// 2. "2026-06-14"       — ISO string (older Telegram bot rows)
+// 3. "6/27/2026 8:00:00" or "6/27/2026" — US format (FAB-added rows)
 function parseGvizDate(raw) {
   try {
-    if (!raw || !String(raw).startsWith("Date(")) {
-      // Fallback: already a plain string date or unexpected format
-      console.warn("Unexpected date format from gviz:", raw);
-      return String(raw).split('T')[0];
+    const s = String(raw).trim();
+
+    // Format 1: gviz Date() serial
+    if (s.startsWith("Date(")) {
+      const parts = s.replace("Date(", "").replace(")", "").split(",");
+      const year  = parts[0].trim();
+      const month = String(Number(parts[1].trim()) + 1).padStart(2, "0");
+      const day   = String(Number(parts[2].trim())).padStart(2, "0");
+      return `${year}-${month}-${day}`;
     }
-    const parts = raw.replace("Date(", "").replace(")", "").split(",");
-    const year  = parts[0].trim();
-    const month = String(Number(parts[1].trim()) + 1).padStart(2, "0");
-    const day   = String(Number(parts[2].trim())).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+
+    // Format 2: already ISO "2026-06-14" (possibly with time suffix)
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      return s.substring(0, 10);
+    }
+
+    // Format 3: US format "6/27/2026" or "6/27/2026 8:00:00"
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
+      const datePart = s.split(" ")[0];
+      const [m, d, y] = datePart.split("/");
+      return `${y}-${m.padStart(2,"0")}-${d.padStart(2,"0")}`;
+    }
+
+    console.warn("Unrecognised date format:", s);
+    return s.substring(0, 10);
   } catch(e) {
     console.error("parseGvizDate failed for:", raw, e.message);
     return "1970-01-01";
