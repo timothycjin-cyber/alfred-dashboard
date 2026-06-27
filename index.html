@@ -116,13 +116,13 @@
     <div id="analytics-metrics"></div>
     <div class="charts-row">
       <div class="card">
-        <div class="card-title">Cumulative Spend Overview (This Month vs Last Month)</div>
+        <div class="card-title">Cumulative Spend (This Month vs Last Month)</div>
         <div style="position:relative; width:100%; height:240px">
           <canvas id="cumulative-line"></canvas>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Expense Distribution Share</div>
+        <div class="card-title">Expenses by Category</div>
         <div class="legend" id="donut-legend"></div>
         <div style="position:relative; width:100%; height:180px">
           <canvas id="donut"></canvas>
@@ -130,7 +130,7 @@
       </div>
     </div>
     <div class="card" style="margin-top: 14px;">
-      <div class="card-title">Itemized Category Breakdown Outflows</div>
+      <div class="card-title">Category Breakdown</div>
       <div style="display:flex; flex-direction:column; gap:12px" id="bar-breakdown"></div>
     </div>
   </div>
@@ -178,7 +178,7 @@ async function init() {
     renderTabs();
     calculateAndRender();
   } catch(e) {
-    document.getElementById('home-view').innerHTML = `<div class="error-banner">⚠️ Could not read Google Sheet data paths.<br>Error: ${e.message}</div>`;
+    document.getElementById('home-view').innerHTML = `<div class="error-banner">⚠️ Could not read Google Sheet data.<br>Error: ${e.message}</div>`;
     document.getElementById('header-sub').textContent = "Error loading connection paths";
   }
 }
@@ -217,7 +217,7 @@ function switchMonth(mo, yr) {
 }
 
 function calculateAndRender() {
-  document.getElementById('header-sub').textContent = `${allRows.length} total transactions parsed · active pipelines live`;
+  document.getElementById('header-sub').textContent = `${allRows.length} total transactions found`;
 
   const rows = allRows.filter(r => {
     const d = new Date(r.Date);
@@ -234,29 +234,29 @@ function calculateAndRender() {
   const catData = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
   const maxCat = catData[0]?.[1] || 1;
 
-  // ── DATA FOR RENDERING: HOME TAB CONTAINER ──
+  // ── HOME VIEW RENDERER ──
   if (currentView === 'home') {
+    const balanceCheekySub = netBalance >= 0 ? "In the green! 🎉" : "Watching the leak ⚠️";
     document.getElementById('home-metrics').innerHTML = `
       <div class="metric-grid">
         <div class="metric">
-          <div class="metric-label">Liquidity Inflow</div>
+          <div class="metric-label">Income</div>
           <div class="metric-val" style="color: #1D9E75;">RM ${totalIncome.toFixed(2)}</div>
-          <div class="metric-sub">${rows.filter(r => r.Type === "Income").length} items logged</div>
+          <div class="metric-sub">${rows.filter(r => r.Type === "Income").length} entries logged</div>
         </div>
         <div class="metric">
-          <div class="metric-label">Liquidity Outflow</div>
+          <div class="metric-label">Expenses</div>
           <div class="metric-val">RM ${totalExpense.toFixed(2)}</div>
-          <div class="metric-sub">${expenseRows.length} items logged</div>
+          <div class="metric-sub">${expenseRows.length} entries logged</div>
         </div>
         <div class="metric">
-          <div class="metric-label">Net Monthly Fluidity</div>
+          <div class="metric-label">Net Balance</div>
           <div class="metric-val" style="color: ${netBalance >= 0 ? '#1D9E75' : '#D4537E'};">RM ${netBalance.toFixed(2)}</div>
-          <div class="metric-sub">${MONTHS[activeMonth]} allocation matrix</div>
+          <div class="metric-sub">${balanceCheekySub}</div>
         </div>
       </div>
     `;
 
-    // Grouping Transactions Chronologically under clear Date Headers
     if (!rows.length) {
       document.getElementById('home-timeline').innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No transactions this month yet.</div>';
     } else {
@@ -283,7 +283,7 @@ function calculateAndRender() {
                 </span>
                 <div>
                   <div class="txn-desc">${r.Description}</div>
-                  <div class="txn-meta">${r.Source} logs</div>
+                  <div class="txn-meta">via ${r.Source}</div>
                 </div>
               </div>
               <span class="txn-amt ${isInc ? 'income' : 'expense'}">
@@ -298,7 +298,7 @@ function calculateAndRender() {
     }
   }
 
-  // ── DATA FOR RENDERING: ANALYTICS TAB ENGINE ──
+  // ── ANALYTICS VIEW RENDERER ──
   if (currentView === 'analytics') {
     const today = new Date();
     const daysInMonth = new Date(activeYear, activeMonth + 1, 0).getDate();
@@ -309,27 +309,28 @@ function calculateAndRender() {
     const dailyBurnRate = daysElapsed > 0 ? (totalExpense / daysElapsed) : 0;
     const projectedEndSpend = dailyBurnRate * daysInMonth;
 
+    const burnCheekySub = dailyBurnRate > 100 ? "A bit of a splurge? 💸" : "Keeping it chill 🧊";
+
     document.getElementById('analytics-metrics').innerHTML = `
       <div class="metric-grid">
         <div class="metric">
-          <div class="metric-label">MTD Burn Velocity</div>
+          <div class="metric-label">Average Daily Spend</div>
           <div class="metric-val">RM ${dailyBurnRate.toFixed(2)}/day</div>
-          <div class="metric-sub">${totalExpense.toFixed(2)} total spend matrix</div>
+          <div class="metric-sub">${burnCheekySub}</div>
         </div>
         <div class="metric">
-          <div class="metric-label">MTD Temporal Pacing</div>
+          <div class="metric-label">Days Elapsed</div>
           <div class="metric-val">${percentageElapsed}%</div>
-          <div class="metric-sub">${daysElapsed} of ${daysInMonth} calendar days passed</div>
+          <div class="metric-sub">Survival rate: ${daysElapsed} of ${daysInMonth} days passed</div>
         </div>
         <div class="metric">
-          <div class="metric-label">EOM Statistical Forecast</div>
+          <div class="metric-label">Projected Month-End Spend</div>
           <div class="metric-val" style="color: #BA7517;">RM ${projectedEndSpend.toFixed(2)}</div>
-          <div class="metric-sub">Extrapolated expenditure trajectory</div>
+          <div class="metric-sub">Where you're landing 🛬</div>
         </div>
       </div>
     `;
 
-    // Category Breakdown Construction
     document.getElementById('donut-legend').innerHTML = catData.map(([cat, val]) => {
       const c = CAT_COLORS[cat] || CAT_COLORS["Other"];
       const pct = totalExpense > 0 ? ((val / totalExpense) * 100).toFixed(0) : 0;
@@ -345,9 +346,8 @@ function calculateAndRender() {
           <span class="cat-amt">RM ${val.toFixed(2)}</span>
         </div>
       `;
-    }).join('') : '<div style="color:#aaa; font-size:13px; padding: 10px;">No expense profiles map to this period.</div>';
+    }).join('') : '<div style="color:#aaa; font-size:13px; padding: 10px;">No expenses for this period.</div>';
 
-    // Chart.js Object Subsystem Initializations
     if (donutChart) donutChart.destroy();
     if (catData.length) {
       donutChart = new Chart(document.getElementById('donut'), {
@@ -360,7 +360,7 @@ function calculateAndRender() {
       });
     }
 
-    // ── TWO-LINE CUMULATIVE TIME-SERIES CONSTRUCTOR ──
+    // Cumulative Line Chart Assembly
     let lastMo = activeMonth - 1;
     let lastYr = activeYear;
     if (lastMo < 0) { lastMo = 11; lastYr -= 1; }
@@ -375,9 +375,7 @@ function calculateAndRender() {
     let currentSum = 0;
     const currentMonthlyCumulativeData = [];
     for (let day = 1; day <= daysInMonth; day++) {
-      if (isCurrentMonth && day > today.getDate()) {
-        break; // Stop plotting current line beyond today's date
-      }
+      if (isCurrentMonth && day > today.getDate()) break;
       const dayExpenses = expenseRows.filter(r => new Date(r.Date).getDate() === day);
       currentSum += dayExpenses.reduce((s, r) => s + r.Amount, 0);
       currentMonthlyCumulativeData.push(currentSum);
