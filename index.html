@@ -235,7 +235,7 @@
   .txn-details { display: flex; flex-direction: column; gap: 2px; }
   .txn-badge-container { display: flex; margin-top: 1px; }
 
-  /* Daily Spent Total Row Footer with Left Accent Bar */
+  /* Daily Spent Total Row Footer with left accent bar */
   .txn-footer {
     background: #fafaf9;
     padding: 11px 1.25rem;
@@ -246,12 +246,12 @@
     font-weight: 700;
     color: #666;
     border-top: 1px solid #f5f5f0;
-    border-left: 4px solid #FF6B6B; /* Vibrant accent red bar */
+    border-left: 4px solid #FF6B6B; /* Unified vibrant red color */
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
   .txn-footer-amt {
-    color: #FF6B6B; /* Unified vibrant red */
+    color: #FF6B6B; 
     font-size: 13.5px;
     font-weight: 800;
   }
@@ -324,7 +324,7 @@
     <div class="charts-row">
       <div class="card">
         <div class="card-title">Cumulative Spend</div>
-        <div style="position:relative; width:100%; height:200px">
+        <div id="cumulative-line-container" style="position:relative; width:100%; height:200px">
           <canvas id="cumulative-line"></canvas>
         </div>
         <div class="custom-pill-legend" style="display:flex; gap:10px; justify-content:center; margin-top:10px">
@@ -339,7 +339,7 @@
       <div class="card">
         <div class="card-title">Expenses by Category</div>
         <div class="donut-layout">
-          <div class="donut-container" style="position:relative; width:100%; height:160px">
+          <div id="donut-container" class="donut-container" style="position:relative; width:100%; height:160px">
             <canvas id="donut"></canvas>
           </div>
           <div class="legend-side-box" id="donut-legend-rows"></div>
@@ -506,7 +506,6 @@ function calculateAndRender() {
 
       let timelineHtml = '';
       for (const [dateStr, records] of Object.entries(groups)) {
-        // Calculate dynamic day spent sum (all expenses except incomes)
         const dayExpensesTotal = records
           .filter(r => r.Type !== 'Income')
           .reduce((sum, r) => sum + r.Amount, 0);
@@ -534,7 +533,6 @@ function calculateAndRender() {
           `;
         }).join('');
         
-        // Append Day Total Spent Row Footer with red accent left border
         timelineHtml += `
           <div class="txn-footer">
             <span>Spent this day</span>
@@ -542,7 +540,7 @@ function calculateAndRender() {
           </div>
         `;
         
-        timelineHtml += `</div>`; // Close txn-list card
+        timelineHtml += `</div>`;
       }
       document.getElementById('home-timeline').innerHTML = timelineHtml;
     }
@@ -593,6 +591,12 @@ function calculateAndRender() {
         </div>
       `;
     }).join('') : '<div style="color:#aaa; font-size:13px; padding:10px 0;">No chart profiles mapped.</div>';
+
+    // Recreation of Donut Canvas Container to prevent duplicate Chart.js overlaps
+    const donutContainer = document.getElementById('donut-container');
+    if (donutContainer) {
+      donutContainer.innerHTML = '<canvas id="donut"></canvas>';
+    }
 
     if (donutChart) donutChart.destroy();
     if (catData.length) {
@@ -657,8 +661,16 @@ function calculateAndRender() {
 
     const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+    // Recreation of Line Canvas Container to cleanly wipe and detach event configurations
+    const lineContainer = document.getElementById('cumulative-line-container');
+    if (lineContainer) {
+      lineContainer.innerHTML = '<canvas id="cumulative-line"></canvas>';
+    }
+
+    const lineCanvas = document.getElementById('cumulative-line');
+
     if (lineChart) lineChart.destroy();
-    lineChart = new Chart(document.getElementById('cumulative-line'), {
+    lineChart = new Chart(lineCanvas, {
       type: 'line',
       data: {
         labels: timelineLabels,
@@ -670,7 +682,7 @@ function calculateAndRender() {
             backgroundColor: 'transparent', 
             borderWidth: 3, 
             pointRadius: 3,
-            pointHoverRadius: 6,
+            pointHoverRadius: 6, // Slightly larger active target node
             pointBackgroundColor: '#fff',
             pointBorderColor: '#FF6B6B',
             pointBorderWidth: 2,
@@ -694,6 +706,9 @@ function calculateAndRender() {
         plugins: { 
           legend: { display: false },
           tooltip: {
+            enabled: true,
+            position: 'nearest', // Anchors tooltip specifically to the active node coordinate position
+            intersect: false,
             callbacks: {
               label: (ctx) => ` ${ctx.dataset.label}: RM ${ctx.raw.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
             }
@@ -731,6 +746,21 @@ function calculateAndRender() {
         }
       }
     });
+
+    // Event listeners to handle manual dismissal on touchend, touchcancel, and mouseleave
+    const dismissTooltip = () => {
+      if (lineChart) {
+        lineChart.setActiveElements([]);
+        if (lineChart.tooltip) {
+          lineChart.tooltip.setActiveElements([], {});
+        }
+        lineChart.update('none'); // Quick layout redraw without transition stutters
+      }
+    };
+
+    lineCanvas.addEventListener('touchend', dismissTooltip);
+    lineCanvas.addEventListener('touchcancel', dismissTooltip);
+    lineCanvas.addEventListener('mouseleave', dismissTooltip);
   }
 }
 
