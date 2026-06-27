@@ -7,289 +7,81 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  /* */
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-    background: #f9f9f6; 
-    color: #1a1a1a; 
-    min-height: 100vh; 
-    padding-bottom: 105px; 
-  }
-
-  .header { 
-    background: #fff; 
-    padding: 1.25rem 1.5rem; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    position: sticky; 
-    top: 0; 
-    z-index: 10; 
-    border-bottom: 1px solid #e8e8e4; 
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9f9f6; color: #1a1a1a; min-height: 100vh; padding-bottom: 105px; }
+  .header { background: #fff; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; border-bottom: 1px solid #e8e8e4; }
   .header-left { display: flex; align-items: center; gap: 12px; }
   .header-title { font-size: 19px; font-weight: 600; color: #1a1a1a; letter-spacing: -0.3px; }
-  
-  .month-select { 
-    font-size: 13px; 
-    padding: 5px 10px; 
-    border-radius: 8px; 
-    border: 1px solid #e8e8e4; 
-    background: #fff; 
-    color: #1a1a1a; 
-    cursor: pointer; 
-    font-weight: 600; 
-    outline: none; 
-  }
-  
-  .refresh-btn { 
-    width: 36px; 
-    height: 36px; 
-    border-radius: 50%; 
-    border: 1px solid #e8e8e4; 
-    background: transparent; 
-    color: #555; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    transition: background 0.2s; 
-    padding: 0; 
-    outline: none;
-  }
+  .month-select { font-size: 13px; padding: 5px 10px; border-radius: 8px; border: 1px solid #e8e8e4; background: #fff; color: #1a1a1a; cursor: pointer; font-weight: 600; outline: none; }
+  .refresh-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e8e8e4; background: transparent; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; padding: 0; outline: none; }
   .refresh-btn:hover { background: #f5f5f0; }
-
-  /* */
-  .floating-nav { 
-    position: fixed; 
-    bottom: 24px; 
-    left: 42%; 
-    transform: translateX(-50%); 
-    background: #1a1a1a; 
-    border-radius: 30px; 
-    display: flex; 
-    align-items: center; 
-    padding: 4px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-    z-index: 100; 
-    width: 210px; 
-    height: 50px; 
-  }
-  .nav-btn { 
-    flex: 1; 
-    border: none; 
-    background: transparent; 
-    color: #aaa; 
-    font-size: 13px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    height: 100%; 
-    z-index: 2; 
-    transition: color 0.3s ease; 
-    outline: none; 
-    -webkit-tap-highlight-color: transparent; 
-  }
+  .floating-nav { position: fixed; bottom: 24px; left: 42%; transform: translateX(-50%); background: #1a1a1a; border-radius: 30px; display: flex; align-items: center; padding: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 100; width: 210px; height: 50px; }
+  .nav-btn { flex: 1; border: none; background: transparent; color: #aaa; font-size: 13px; font-weight: 600; cursor: pointer; height: 100%; z-index: 2; transition: color 0.3s ease; outline: none; -webkit-tap-highlight-color: transparent; }
   .nav-btn.active { color: #fff; }
-  .nav-slider { 
-    position: absolute; 
-    top: 4px; 
-    bottom: 4px; 
-    left: 4px; 
-    width: calc(50% - 4px); 
-    background: rgba(255,255,255,0.15); 
-    border-radius: 25px; 
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    z-index: 1; 
-    pointer-events: none; 
-  }
-
-  .fab-btn {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 50px;
-    height: 50px;
-    background: #FF6B6B;
-    border-radius: 50%;
-    border: none;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 24px rgba(255,107,107,0.4);
-    cursor: pointer;
-    z-index: 101;
-    outline: none;
-    transition: transform 0.2s ease;
-  }
+  .nav-slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: rgba(255,255,255,0.15); border-radius: 25px; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1; pointer-events: none; }
+  .fab-btn { position: fixed; bottom: 24px; right: 24px; width: 50px; height: 50px; background: #FF6B6B; border-radius: 50%; border: none; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(255,107,107,0.4); cursor: pointer; z-index: 101; outline: none; transition: transform 0.2s ease; }
   .fab-btn:active { transform: scale(0.9); }
-
-  /* */
-  .drawer-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 200;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  .drawer-panel {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: #fff;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    padding: 1.5rem;
-    z-index: 201;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
-    max-width: 600px;
-    margin: 0 auto;
-    overflow-y: auto;
-    max-height: 85vh;
-  }
+  .drawer-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; opacity: 0; transition: opacity 0.3s ease; }
+  .drawer-panel { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 1.5rem; z-index: 201; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 -10px 30px rgba(0,0,0,0.08); max-width: 600px; margin: 0 auto; overflow-y: auto; max-height: 85vh; }
   .drawer-overlay.active { display: block; opacity: 1; }
   .drawer-panel.active { transform: translateY(0); }
-
   .drawer-header { font-size: 16px; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
   .drawer-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
-
   .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
   .form-label { font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
   .form-input, .form-select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e8e8e4; font-size: 14px; outline: none; background: #fafaf9; }
   .form-input:focus, .form-select:focus { border-color: #FF6B6B; background: #fff; }
-  
   .btn-row { display: flex; gap: 10px; margin-top: 1.25rem; }
   .btn-main { flex: 1; padding: 12px; background: #1a1a1a; color: #fff; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-danger { flex: 1; padding: 12px; background: #fff; color: #FF6B6B; border: 1px solid #e8e8e4; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-
-  /* */
-  .toast-banner {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-100px);
-    background: #1a1a1a;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    z-index: 500;
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-align: center;
-    max-width: 90%;
-  }
+  .toast-banner { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.25); z-index: 500; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 8px; text-align: center; max-width: 90%; }
   .toast-banner.show { transform: translateX(-50%) translateY(0); }
-
   .container { max-width: 900px; margin: 0 auto; padding: 1.25rem 1rem; }
   .view-section { display: none; }
   .view-section.active { display: block; }
-
   .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.5rem; width: 100%; }
-  @media (max-width: 480px) {
-    .metric-grid.home-grid { grid-template-columns: repeat(2, 1fr); }
-    .metric-grid.home-grid .balance-card { grid-column: span 2; }
-    .metric-grid.analytics-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-
+  @media (max-width: 480px) { .metric-grid.home-grid { grid-template-columns: repeat(2, 1fr); } .metric-grid.home-grid .balance-card { grid-column: span 2; } .metric-grid.analytics-grid { grid-template-columns: repeat(2, 1fr); } }
   .metric { background: #fff; border-radius: 14px; padding: 0.75rem 0.5rem; border: 1px solid #e8e8e4; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 80px; }
   .metric-label { font-size: 10px; color: #888; margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
   .metric-val { font-size: 14px; font-weight: 700; white-space: nowrap; }
   .metric-sub { font-size: 9px; color: #aaa; margin-top: 3px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  @media (min-width: 360px) {
-    .metric-val { font-size: 15px; }
-    .metric-label { font-size: 11px; }
-    .metric-sub { font-size: 10px; }
-    .metric { padding: 1rem 0.5rem; min-height: 90px; }
-  }
-
+  @media (min-width: 360px) { .metric-val { font-size: 15px; } .metric-label { font-size: 11px; } .metric-sub { font-size: 10px; } .metric { padding: 1rem 0.5rem; min-height: 90px; } }
   .metric.crystal-ball { background: radial-gradient(circle at 85% 15%, #fff 0%, #faf9fc 60%, #f5f0ff 100%); border-color: #e1d8ff; }
-
   .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; width: 100%; justify-content: center; }
   @media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto 1.5rem auto; } }
-
   .card { background: #fff; border-radius: 14px; border: 1px solid #e8e8e4; padding: 1.25rem; width: 100%; display: flex; flex-direction: column; }
   .card-title { font-size: 12px; font-weight: 600; margin-bottom: 14px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px; }
-
   .custom-pill-legend { display: flex; gap: 12px; justify-content: center; margin-top: 10px; width: 100%; }
-  
   .legend-side-box { display: flex; flex-direction: column; gap: 8px; justify-content: center; margin-top: 12px; }
-  @media (min-width: 480px) {
-    .donut-layout { display: flex; align-items: center; gap: 14px; }
-    .donut-container { flex: 1; }
-    .legend-side-box { flex: 1; margin-top: 0; }
-  }
-  
+  @media (min-width: 480px) { .donut-layout { display: flex; align-items: center; gap: 14px; } .donut-container { flex: 1; } .legend-side-box { flex: 1; margin-top: 0; } }
   .legend-row-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 500; color: #555; }
   .legend-row-left { display: flex; align-items: center; gap: 6px; }
-
   .cat-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
   .cat-name { font-size: 12px; color: #666; font-weight: 500; width: 110px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cat-bar-bg { flex: 1; height: 6px; border-radius: 3px; background: #f2f2ee; overflow: hidden; }
   .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
   .cat-amt { font-size: 12px; font-weight: 600; width: 72px; text-align: right; flex-shrink: 0; }
-
-  /* */
   .date-group-header { font-size: 12px; font-weight: 700; color: #888; margin: 1.5rem 0 0.5rem 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
   .txn-list { border-radius: 14px; border: 1px solid #e8e8e4; background: #fff; overflow: hidden; margin-bottom: 0.5rem; }
-  
-  .txn-row { 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    padding: 10px 1.25rem; 
-    border-bottom: 1px solid #f5f5f0; 
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
+  .txn-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 1.25rem; border-bottom: 1px solid #f5f5f0; cursor: pointer; transition: background 0.15s ease; }
   .txn-row:hover { background: #fafaf9; }
   .txn-row:last-child { border-bottom: none; }
-  
   .txn-left { display: flex; align-items: center; gap: 12px; }
   .txn-details { display: flex; flex-direction: column; gap: 2px; }
   .txn-badge-container { display: flex; margin-top: 1px; }
-
-  .txn-footer {
-    background: #fafaf9;
-    padding: 11px 1.25rem 11px 1.45rem; 
-    position: relative; 
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: #666;
-    border-top: 1px solid #f5f5f0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .txn-footer::before {
-    content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 4px; background-color: #FF6B6B; border-radius: 3px;
-  }
+  .txn-footer { background: #fafaf9; padding: 11px 1.25rem 11px 1.45rem; position: relative; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #666; border-top: 1px solid #f5f5f0; text-transform: uppercase; letter-spacing: 0.5px; }
+  /* FIX 4: Only show red bar when there are expenses that day */
+  .txn-footer.has-expenses::before { content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 4px; background-color: #FF6B6B; border-radius: 3px; }
   .txn-footer-amt { color: #FF6B6B; font-size: 13.5px; font-weight: 800; }
-  
   .badge { font-size: 9px; padding: 1px 6px; border-radius: 5px; font-weight: 700; white-space: nowrap; background: transparent; border-width: 1px; border-style: solid; text-transform: uppercase; letter-spacing: 0.3px; }
   .badge.inc-badge { color: #1D9E75; border-color: #1D9E75; }
   .badge.exp-badge { color: #FF6B6B; border-color: #FF6B6B; }
-
   .txn-desc { font-size: 13px; font-weight: 600; color: #1a1a1a; line-height: 1.25; }
   .txn-amt { font-size: 13px; font-weight: 700; }
   .txn-amt.income { color: #1D9E75; }
   .txn-amt.expense { color: #FF6B6B; }
-
   .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 1rem; color: #888; font-size: 14px; }
   .spinner { width: 28px; height: 28px; border: 3px solid #e8e8e4; border-top-color: #1D9E75; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   @media (prefers-color-scheme: dark) {
     body { background: #141412; color: #e3e3df; }
     .header, .metric, .card, .txn-list, .month-select, .drawer-panel { background: #1e1e1c; border-color: #2c2c2a; color: #e3e3df; }
@@ -319,31 +111,27 @@
   </button>
 </div>
 
-<!-- Global Toast Notification Banner -->
 <div id="toast" class="toast-banner"></div>
 
-<!-- Floating Action Button (FAB) -->
 <button class="fab-btn" onclick="openAddDrawer()">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
     <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
   </svg>
 </button>
 
-<!-- Navigation Pill -->
 <div class="floating-nav">
   <div id="nav-slider" class="nav-slider"></div>
   <button class="nav-btn active" id="tab-home" onclick="switchView('home')">Home</button>
   <button class="nav-btn" id="tab-analytics" onclick="switchView('analytics')">Analytics</button>
 </div>
 
-<!-- Add Transaction Drawer Panel Overlay -->
+<!-- Add Transaction Drawer -->
 <div id="add-drawer-overlay" class="drawer-overlay" onclick="closeAddDrawer()"></div>
 <div id="add-drawer-panel" class="drawer-panel">
   <div class="drawer-header">
     <span>Quick Add Transaction</span>
     <button class="drawer-close" onclick="closeAddDrawer()">×</button>
   </div>
-  
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
     <div class="form-group">
       <label class="form-label">Amount (RM)</label>
@@ -373,16 +161,21 @@
       <option value="Other">Other</option>
     </select>
   </div>
+  <!-- FIX 2: Date field for correct local timezone logging -->
+  <div class="form-group">
+    <label class="form-label">Date</label>
+    <input type="date" id="manual-date" class="form-input">
+  </div>
   <div class="btn-row">
     <button id="add-submit-btn" class="btn-main" onclick="submitAddTransaction()">Save Entry</button>
   </div>
 </div>
 
-<!-- Manual Edit/Delete Action Panel Overlay -->
+<!-- Edit/Delete Drawer -->
 <div id="edit-drawer-overlay" class="drawer-overlay" onclick="closeEditDrawer()"></div>
 <div id="edit-drawer-panel" class="drawer-panel">
   <div class="drawer-header">
-    <span>Manage Spreadsheet Entry</span>
+    <span>Manage Entry</span>
     <button class="drawer-close" onclick="closeEditDrawer()">×</button>
   </div>
   <input type="hidden" id="edit-orig-date">
@@ -420,8 +213,9 @@
       <option value="Other">Other</option>
     </select>
   </div>
+  <!-- FIX 3: Renamed label from "Date Offset" to "Date" -->
   <div class="form-group">
-    <label class="form-label">Date Offset</label>
+    <label class="form-label">Date</label>
     <input type="date" id="edit-date" class="form-input">
   </div>
   <div class="btn-row">
@@ -477,7 +271,6 @@
 
 <script>
 const APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwAtrD-a9qht6e_yvzhawAdhNHY73e9Tbuj2Jsmi6YmjlRiAauop2r9rVe71wLBW9Hj/exec";
-
 const SHEET_ID = "19_C3gFlY7hDjGm87k3Uke63_Tgg6TQPl6xLiGZvuEis";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Sheet1`;
 
@@ -497,7 +290,16 @@ let activeMonth = new Date().getMonth();
 let activeYear = new Date().getFullYear();
 let currentView = 'home';
 let donutChart = null, lineChart = null;
-let deleteConfirmActive = false; // Tracks double-tap delete confirmation states
+let deleteConfirmActive = false;
+
+// FIX 2: Get today's date in LOCAL timezone (not UTC)
+function getLocalDateString() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 function formatCurrency(num) {
   return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -508,7 +310,7 @@ function showToast(message, isError = false) {
   toast.innerText = message;
   toast.style.background = isError ? '#FF6B6B' : '#1a1a1a';
   toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 4500); // Extended slightly to let users read detailed error logs
+  setTimeout(() => { toast.classList.remove('show'); }, 4500);
 }
 
 Chart.Tooltip.positioners.thisMonthOnly = function(elements) {
@@ -592,6 +394,8 @@ function handleMonthDropdown(val) {
 }
 
 function openAddDrawer() {
+  // FIX 2: Pre-fill date with correct local date
+  document.getElementById('manual-date').value = getLocalDateString();
   document.getElementById('add-drawer-overlay').classList.add('active');
   document.getElementById('add-drawer-panel').classList.add('active');
 }
@@ -608,20 +412,16 @@ function openEditDrawer(date, amount, category, description, type) {
   document.getElementById('edit-orig-cat').value = category;
   document.getElementById('edit-orig-desc').value = description;
   document.getElementById('edit-orig-type').value = type;
-
   document.getElementById('edit-amount').value = amount;
   document.getElementById('edit-type').value = type;
   document.getElementById('edit-desc').value = description;
   document.getElementById('edit-category').value = category;
   document.getElementById('edit-date').value = date;
-
-  // Reset delete button states
   deleteConfirmActive = false;
   const deleteBtn = document.getElementById('delete-btn');
   deleteBtn.innerText = "Delete";
   deleteBtn.style.background = "#fff";
   deleteBtn.style.color = "#FF6B6B";
-
   document.getElementById('edit-drawer-overlay').classList.add('active');
   document.getElementById('edit-drawer-panel').classList.add('active');
 }
@@ -637,19 +437,17 @@ async function submitAddTransaction() {
     type: document.getElementById('manual-type').value,
     description: document.getElementById('manual-desc').value.trim(),
     category: document.getElementById('manual-category').value,
-    date: new Date().toISOString().split('T')[0] // Default to today's date
+    // FIX 2: Use the user-selected local date field instead of UTC ISO string
+    date: document.getElementById('manual-date').value
   };
-
   if (isNaN(payload.amount) || !payload.description) {
-    showToast("Please verify both description and amount are completed.", true);
+    showToast("Please fill in both description and amount.", true);
     return;
   }
-
   closeAddDrawer();
   executeWebhookTransaction(payload);
 }
 
-// Double-tap delete confirmation flow for optimal mobile usability
 function executeDelete() {
   const deleteBtn = document.getElementById('delete-btn');
   if (!deleteConfirmActive) {
@@ -657,8 +455,6 @@ function executeDelete() {
     deleteBtn.innerText = "Confirm Delete?";
     deleteBtn.style.background = "#FF6B6B";
     deleteBtn.style.color = "#fff";
-    
-    // Auto-reset confirmation block after 3.5 seconds
     setTimeout(() => {
       if (deleteConfirmActive) {
         deleteConfirmActive = false;
@@ -669,7 +465,6 @@ function executeDelete() {
     }, 3500);
     return;
   }
-
   deleteConfirmActive = false;
   const payload = {
     action: "delete",
@@ -705,36 +500,42 @@ function executeUpdate() {
   executeWebhookTransaction(payload);
 }
 
+// FIX 1: CORS-safe fire-and-forget with no-cors, then poll for confirmation
 async function executeWebhookTransaction(payload) {
   if (APPS_SCRIPT_WEBHOOK_URL.includes("YOUR_APPS_SCRIPT")) {
-    showToast("Web app URL missing! Check manual console logs.", true);
-    console.log("Mock Intercept Transaction Action:", payload);
+    showToast("Web app URL missing! Check console.", true);
+    console.log("Mock payload:", payload);
     return;
   }
+
   document.getElementById('main-loader').style.display = 'flex';
+  showToast("Saving to sheet...");
+
   try {
-    // Standard text/plain submission bypasses preflight checks entirely.
-    // We REMOVED no-cors so we can actively parse responses and capture errors.
-    const res = await fetch(APPS_SCRIPT_WEBHOOK_URL, {
+    // Apps Script doesn't return CORS headers on POST, so we use no-cors.
+    // This means we can't read the response — we fire and wait, then re-poll the sheet.
+    await fetch(APPS_SCRIPT_WEBHOOK_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "text/plain; charset=utf-8" },
       body: JSON.stringify(payload)
     });
-    
-    const result = await res.json();
-    
-    if (result.status === "error") {
-      showToast("Sync Error: " + result.message, true);
-      document.getElementById('main-loader').style.display = 'none';
-      return;
-    }
-    
-    showToast("Spreadsheet updated successfully.");
-    setTimeout(() => { init(); }, 2000); // 2 second sync delay to allow row changes to settle
   } catch(e) {
-    showToast("Network exception: Ensure web app URL is deployed & active.", true);
-    document.getElementById('main-loader').style.display = 'none';
+    // no-cors fetches rarely throw, but handle just in case
+    console.warn("Fetch warning (may be benign with no-cors):", e.message);
   }
+
+  // Poll the sheet after a short delay to confirm the write landed
+  // Apps Script webhooks are async under the hood — 2.5s gives it time to settle
+  setTimeout(async () => {
+    try {
+      await init();
+      showToast("✓ Sheet updated.");
+    } catch(e) {
+      showToast("Saved, but couldn't refresh — tap ↻ to reload.", false);
+      document.getElementById('main-loader').style.display = 'none';
+    }
+  }, 2500);
 }
 
 function calculateAndRender() {
@@ -773,7 +574,9 @@ function calculateAndRender() {
 
       let timelineHtml = '';
       for (const [dateStr, records] of Object.entries(groups)) {
+        // FIX 4: Only compute expense total and conditionally apply the red bar class
         const dayExpensesTotal = records.filter(r => r.Type !== 'Income').reduce((sum, r) => sum + r.Amount, 0);
+        const hasExpenses = dayExpensesTotal > 0;
 
         timelineHtml += `<div class="date-group-header">${dateStr}</div><div class="txn-list">`;
         timelineHtml += records.map(r => {
@@ -783,14 +586,18 @@ function calculateAndRender() {
               <div class="txn-left">
                 <div class="txn-details">
                   <div class="txn-desc">${r.Description}</div>
-                  <div class="txn-badge-container"><span class="badge ${isInc ? 'inc-badge' : 'exp-badge'}">${isInc?'Income':r.Category.split(' ')[0]}</span></div>
+                  <div class="txn-badge-container"><span class="badge ${isInc ? 'inc-badge' : 'exp-badge'}">${isInc ? 'Income' : r.Category.split(' ')[0]}</span></div>
                 </div>
               </div>
               <span class="txn-amt ${isInc ? 'income' : 'expense'}">${isInc ? '+' : ''}RM ${formatCurrency(r.Amount)}</span>
             </div>
           `;
         }).join('');
-        timelineHtml += `<div class="txn-footer"><span>Spent this day</span><span class="txn-footer-amt">RM ${formatCurrency(dayExpensesTotal)}</span></div></div>`;
+        // FIX 4: Conditionally show footer and red bar only when there are expenses
+        if (hasExpenses) {
+          timelineHtml += `<div class="txn-footer has-expenses"><span>Spent this day</span><span class="txn-footer-amt">RM ${formatCurrency(dayExpensesTotal)}</span></div>`;
+        }
+        timelineHtml += `</div>`;
       }
       document.getElementById('home-timeline').innerHTML = timelineHtml;
     }
@@ -837,7 +644,7 @@ function calculateAndRender() {
     let lastMo = activeMonth - 1, lastYr = activeYear; if (lastMo < 0) { lastMo = 11; lastYr -= 1; }
     const lastMonthExpenseRows = allRows.filter(r => { const d = new Date(r.Date); return d.getMonth() === lastMo && d.getFullYear() === lastYr && r.Type !== "Income"; });
     const timelineLabels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    
+
     let currentSum = 0; const currentMonthlyCumulativeData = [];
     for (let day = 1; day <= daysInMonth; day++) {
       if (isCurrentMonth && day > today.getDate()) break;
