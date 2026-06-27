@@ -292,6 +292,10 @@ let currentView = 'home';
 let donutChart = null, lineChart = null;
 let deleteConfirmActive = false;
 
+// Lookup map: index → row object. Populated during render, used by event delegation.
+// Avoids passing data through onclick string interpolation (breaks on quotes, ampersands, etc.)
+let rowLookup = {};
+
 // FIX 2: Get today's date in LOCAL timezone (not UTC)
 function getLocalDateString() {
   const now = new Date();
@@ -572,6 +576,8 @@ function calculateAndRender() {
         groups[dateHeader].push(r);
       });
 
+      rowLookup = {};
+      let rowIdx = 0;
       let timelineHtml = '';
       for (const [dateStr, records] of Object.entries(groups)) {
         // FIX 4: Only compute expense total and conditionally apply the red bar class
@@ -581,11 +587,14 @@ function calculateAndRender() {
         timelineHtml += `<div class="date-group-header">${dateStr}</div><div class="txn-list">`;
         timelineHtml += records.map(r => {
           const isInc = r.Type === "Income";
+          const idx = rowIdx++;
+          // Store full row object in lookup — safe against any special chars in description
+          rowLookup[idx] = r;
           return `
-            <div class="txn-row" onclick="openEditDrawer('${r.Date}', ${r.Amount}, '${r.Category}', '${r.Description.replace(/'/g, "\\'")}', '${r.Type}')">
+            <div class="txn-row" data-idx="${idx}">
               <div class="txn-left">
                 <div class="txn-details">
-                  <div class="txn-desc">${r.Description}</div>
+                  <div class="txn-desc">${r.Description.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
                   <div class="txn-badge-container"><span class="badge ${isInc ? 'inc-badge' : 'exp-badge'}">${isInc ? 'Income' : r.Category.split(' ')[0]}</span></div>
                 </div>
               </div>
@@ -683,6 +692,17 @@ function calculateAndRender() {
     lineCanvas.addEventListener('touchend', dismissTooltip); lineCanvas.addEventListener('touchcancel', dismissTooltip); lineCanvas.addEventListener('mouseleave', dismissTooltip);
   }
 }
+
+// Event delegation: single listener on the timeline container handles all row clicks.
+// Safe against any content in description — no string interpolation in onclick.
+document.getElementById('home-timeline').addEventListener('click', function(e) {
+  const row = e.target.closest('.txn-row[data-idx]');
+  if (!row) return;
+  const idx = parseInt(row.dataset.idx, 10);
+  const r = rowLookup[idx];
+  if (!r) return;
+  openEditDrawer(r.Date, r.Amount, r.Category, r.Description, r.Type);
+});
 
 init();
 </script>
