@@ -381,6 +381,28 @@ function formatCurrency(num) {
   return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Register custom positioning calculator to strictly pin the tooltip on the Red Line (Dataset Index 0)
+Chart.Tooltip.positioners.thisMonthOnly = function(elements) {
+  if (!elements || elements.length === 0) return false;
+  // Pin strictly to dataset index 0 (This Month)
+  const target = elements.find(el => el.datasetIndex === 0);
+  if (target && target.element) {
+    return {
+      x: target.element.x,
+      y: target.element.y
+    };
+  }
+  // Safe fallback to first available active element
+  const first = elements[0];
+  if (first && first.element) {
+    return {
+      x: first.element.x,
+      y: first.element.y
+    };
+  }
+  return false;
+};
+
 const centerTextPlugin = {
   id: 'centerText',
   afterDraw: (chart) => {
@@ -707,9 +729,9 @@ function calculateAndRender() {
           legend: { display: false },
           tooltip: {
             enabled: true,
-            position: 'nearest', // Anchors tooltip specifically to the active node coordinate position
+            position: 'thisMonthOnly', // ALWAYS lock strictly on active "This Month" node!
             intersect: false,
-            // ── EXPLICIT FILTER: Only display active data element of "This Month" (Index 0) ──
+            // EXPLICIT FILTER: Only load "This Month" dataset elements inside active list views
             filter: function(tooltipItem) {
               return tooltipItem.datasetIndex === 0;
             },
