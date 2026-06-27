@@ -348,7 +348,7 @@
   <button class="nav-btn" id="tab-analytics" onclick="switchView('analytics')">Analytics</button>
 </div>
 
-<!-- Add/Voice Transaction Drawer Panel Overlay -->
+<!-- Add Transaction Drawer Panel Overlay -->
 <div id="add-drawer-overlay" class="drawer-overlay" onclick="closeAddDrawer()"></div>
 <div id="add-drawer-panel" class="drawer-panel">
   <div class="drawer-header">
@@ -356,18 +356,7 @@
     <button class="drawer-close" onclick="closeAddDrawer()">×</button>
   </div>
   
-  <div class="form-group" style="background: #FDFBFA; padding: 12px; border-radius: 12px; border: 1px dashed #FFD0D0;">
-    <label class="form-label" style="color: #FF6B6B;">✨ AI Natural Language Assistant (ChatGPT)</label>
-    <div style="display: flex; gap: 8px; margin-top: 6px;">
-      <input type="text" id="voice-input" class="form-input" placeholder="e.g., lunch at grab RM15" style="font-weight: 500; border-color: #FFD0D0;">
-      <button id="ai-parse-btn" class="btn-secondary" onclick="triggerAiParse()">Parse with AI</button>
-    </div>
-    <div id="ai-status" style="font-size: 11px; color: #888; margin-top: 4px; display: none;"></div>
-  </div>
-  
-  <div style="text-align: center; margin: 12px 0 8px 0; font-size: 10px; color: #aaa; letter-spacing: 0.5px; font-weight: 700;">VERIFY DATA BEFORE SUBMITTING</div>
-  
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
     <div class="form-group">
       <label class="form-label">Amount (RM)</label>
       <input type="number" step="0.01" id="manual-amount" class="form-input">
@@ -382,7 +371,7 @@
   </div>
   <div class="form-group">
     <label class="form-label">Description</label>
-    <input type="text" id="manual-desc" class="form-input">
+    <input type="text" id="manual-desc" class="form-input" placeholder="e.g. Lunch with team">
   </div>
   <div class="form-group">
     <label class="form-label">Category</label>
@@ -499,8 +488,7 @@
 </div>
 
 <script>
-// ─── CRITICAL CONFIGURATIONS: APPS SCRIPT URL ───
-// Paste your newly deployed Google Apps Script Web App URL below:
+// ─── STREAMING_CHUNK: Initializing state configurations... ───
 const APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwAtrD-a9qht6e_yvzhawAdhNHY73e9Tbuj2Jsmi6YmjlRiAauop2r9rVe71wLBW9Hj/exec";
 
 const SHEET_ID = "19_C3gFlY7hDjGm87k3Uke63_Tgg6TQPl6xLiGZvuEis";
@@ -588,6 +576,7 @@ async function init() {
   }
 }
 
+// ─── STREAMING_CHUNK: Managing tab layouts and active views... ───
 function switchView(view) {
   window.scrollTo(0, 0);
   currentView = view;
@@ -624,10 +613,8 @@ function openAddDrawer() {
 function closeAddDrawer() {
   document.getElementById('add-drawer-overlay').classList.remove('active');
   document.getElementById('add-drawer-panel').classList.remove('active');
-  document.getElementById('voice-input').value = "";
   document.getElementById('manual-amount').value = "";
   document.getElementById('manual-desc').value = "";
-  document.getElementById('ai-status').style.display = "none";
 }
 
 function openEditDrawer(date, amount, category, description, type) {
@@ -658,62 +645,7 @@ function closeEditDrawer() {
   document.getElementById('edit-drawer-panel').classList.remove('active');
 }
 
-// ─── SECURE PROXIED ChatGPT PARSER (No Keys in Frontend) ───
-async function triggerAiParse() {
-  const voiceInput = document.getElementById('voice-input').value.trim();
-  if (!voiceInput) {
-    showToast("Please enter some text for Alfred to parse.", true);
-    return;
-  }
-
-  if (APPS_SCRIPT_WEBHOOK_URL.includes("YOUR_APPS_SCRIPT")) {
-    showToast("Webhook URL missing! Configure the top of your index.html file.", true);
-    return;
-  }
-
-  const parseBtn = document.getElementById('ai-parse-btn');
-  const statusDiv = document.getElementById('ai-status');
-  
-  parseBtn.disabled = true;
-  parseBtn.innerText = "Alfred thinking...";
-  statusDiv.style.display = "block";
-  statusDiv.style.color = "#888";
-  statusDiv.innerText = "Routing secure parse request to your Apps Script vault...";
-
-  try {
-    // Send text safely to Apps Script Web App (action: "parse")
-    const response = await fetch(APPS_SCRIPT_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "parse", text: voiceInput })
-    });
-    
-    const parsedData = await response.json();
-    
-    if (parsedData.status === "error" || parsedData.error) {
-      throw new Error(parsedData.message || parsedData.error);
-    }
-    
-    // Auto-populate form safely
-    document.getElementById('manual-amount').value = parsedData.amount || "";
-    document.getElementById('manual-type').value = parsedData.type || "Expense";
-    document.getElementById('manual-desc').value = parsedData.description || "";
-    document.getElementById('manual-category').value = parsedData.category || "Other";
-    
-    statusDiv.style.color = "#1D9E75";
-    statusDiv.innerText = "✨ Cleanly parsed! Review the parameters below and save.";
-    showToast("AI Auto-fill complete!");
-  } catch (err) {
-    statusDiv.style.color = "#FF6B6B";
-    statusDiv.innerText = `⚠️ Routing error: ${err.message}. Ensure your Apps Script is deployed.`;
-    showToast("AI processing failed.", true);
-  } finally {
-    parseBtn.disabled = false;
-    parseBtn.innerText = "Parse with AI";
-  }
-}
-
-// ─── PIPELINE WEBHOOK NETWORK EXECUTORS ───
+// ─── STREAMING_CHUNK: Defining transaction submissions and updates... ───
 async function submitAddTransaction() {
   const payload = {
     action: "add",
@@ -789,18 +721,20 @@ function executeUpdate() {
   executeWebhookTransaction(payload);
 }
 
+// ─── STREAMING_CHUNK: Processing webhook AJAX pipeline fetches... ───
 async function executeWebhookTransaction(payload) {
   if (APPS_SCRIPT_WEBHOOK_URL.includes("YOUR_APPS_SCRIPT")) {
-    showToast("Web app URL missing! Print action parameters to log console.", true);
+    showToast("Web app URL missing! Check manual console logs.", true);
     console.log("Mock Intercept Transaction Action:", payload);
     return;
   }
   document.getElementById('main-loader').style.display = 'flex';
   try {
+    // Standard fetch POST using text/plain to bypass OPTIONS preflight CORS checks entirely
     await fetch(APPS_SCRIPT_WEBHOOK_URL, {
       method: "POST",
-      mode: "no-cors", // Essential to prevent security halts during Google Web App redirection sequences
-      headers: { "Content-Type": "application/json" },
+      mode: "no-cors", 
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
       body: JSON.stringify(payload)
     });
     showToast("Spreadsheet update queued successfully.");
