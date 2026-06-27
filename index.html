@@ -476,7 +476,7 @@
 </div>
 
 <script>
-//const APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwAtrD-a9qht6e_yvzhawAdhNHY73e9Tbuj2Jsmi6YmjlRiAauop2r9rVe71wLBW9Hj/exec";
+const APPS_SCRIPT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwAtrD-a9qht6e_yvzhawAdhNHY73e9Tbuj2Jsmi6YmjlRiAauop2r9rVe71wLBW9Hj/exec";
 
 const SHEET_ID = "19_C3gFlY7hDjGm87k3Uke63_Tgg6TQPl6xLiGZvuEis";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Sheet1`;
@@ -563,7 +563,7 @@ async function init() {
   }
 }
 
-//function switchView(view) {
+function switchView(view) {
   window.scrollTo(0, 0);
   currentView = view;
   document.querySelectorAll('.nav-btn').forEach(t => t.classList.remove('active'));
@@ -591,7 +591,7 @@ function handleMonthDropdown(val) {
   calculateAndRender();
 }
 
-//function openAddDrawer() {
+function openAddDrawer() {
   document.getElementById('add-drawer-overlay').classList.add('active');
   document.getElementById('add-drawer-panel').classList.add('active');
 }
@@ -630,7 +630,7 @@ function closeEditDrawer() {
   document.getElementById('edit-drawer-panel').classList.remove('active');
 }
 
-//async function submitAddTransaction() {
+async function submitAddTransaction() {
   const payload = {
     action: "add",
     amount: parseFloat(document.getElementById('manual-amount').value),
@@ -705,7 +705,7 @@ function executeUpdate() {
   executeWebhookTransaction(payload);
 }
 
-//async function executeWebhookTransaction(payload) {
+async function executeWebhookTransaction(payload) {
   if (APPS_SCRIPT_WEBHOOK_URL.includes("YOUR_APPS_SCRIPT")) {
     showToast("Web app URL missing! Check manual console logs.", true);
     console.log("Mock Intercept Transaction Action:", payload);
