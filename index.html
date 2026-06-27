@@ -370,10 +370,22 @@ function parseGvizDate(raw) {
       return s.substring(0, 10);
     }
 
-    // Format 3: US format "6/27/2026" or "6/27/2026 8:00:00"
+    // Format 3: US format M/D/YYYY "6/27/2026" or "6/27/2026 8:00:00"
     if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(s)) {
       const datePart = s.split(" ")[0];
-      const [m, d, y] = datePart.split("/");
+      const parts = datePart.split("/");
+      // Distinguish M/D/YYYY (US) vs D/M/YYYY (MY locale) by checking if first part > 12
+      // If first part > 12 it must be a day, so treat as D/M/YYYY
+      const [a, b, y] = parts;
+      const aNum = parseInt(a), bNum = parseInt(b);
+      let m, d;
+      if (aNum > 12) {
+        // D/M/YYYY (MY locale)
+        d = a; m = b;
+      } else {
+        // M/D/YYYY (US format from gspread RAW write)
+        m = a; d = b;
+      }
       return `${y}-${m.padStart(2,"0")}-${d.padStart(2,"0")}`;
     }
 
@@ -394,9 +406,12 @@ async function init() {
     allRows = [];
     json.table.rows.forEach((r, i) => {
       try {
-        if (!r.c[0]?.v || !r.c[1]?.v) return; // skip empty rows
+        // gviz returns {v: null, f: "2026-06-27"} for plain-text dates in a Date column
+        // so we fall back to the formatted value .f when .v is null
+        const dateRaw = r.c[0]?.v ?? r.c[0]?.f ?? null;
+        if (!dateRaw || !r.c[1]?.v) return; // skip genuinely empty rows
         allRows.push({
-          Date: parseGvizDate(r.c[0].v),
+          Date: parseGvizDate(String(dateRaw)),
           Amount: Number(r.c[1].v),
           Category: r.c[2]?.v != null ? String(r.c[2].v).trim() : "Other",
           Description: r.c[3]?.v != null ? String(r.c[3].v).trim() : "",
