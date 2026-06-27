@@ -709,6 +709,10 @@ function calculateAndRender() {
             enabled: true,
             position: 'nearest', // Anchors tooltip specifically to the active node coordinate position
             intersect: false,
+            // ── EXPLICIT FILTER: Only display active data element of "This Month" (Index 0) ──
+            filter: function(tooltipItem) {
+              return tooltipItem.datasetIndex === 0;
+            },
             callbacks: {
               label: (ctx) => ` ${ctx.dataset.label}: RM ${ctx.raw.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
             }
