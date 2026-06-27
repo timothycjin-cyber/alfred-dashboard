@@ -349,11 +349,21 @@ Chart.register(centerTextPlugin);
 // Correctly parses gviz date strings like "Date(2026,5,27)" → "2026-06-27"
 // Month is 0-indexed in gviz. Year must NOT be padded (was the bug causing row-match failures).
 function parseGvizDate(raw) {
-  const parts = raw.replace("Date(", "").replace(")", "").split(",");
-  const year  = parts[0].trim();                               // keep full 4-digit year
-  const month = String(Number(parts[1].trim()) + 1).padStart(2, "0"); // 0-indexed → 1-indexed
-  const day   = String(Number(parts[2].trim())).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  try {
+    if (!raw || !String(raw).startsWith("Date(")) {
+      // Fallback: already a plain string date or unexpected format
+      console.warn("Unexpected date format from gviz:", raw);
+      return String(raw).split('T')[0];
+    }
+    const parts = raw.replace("Date(", "").replace(")", "").split(",");
+    const year  = parts[0].trim();
+    const month = String(Number(parts[1].trim()) + 1).padStart(2, "0");
+    const day   = String(Number(parts[2].trim())).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } catch(e) {
+    console.error("parseGvizDate failed for:", raw, e.message);
+    return "1970-01-01";
+  }
 }
 
 async function init() {
@@ -362,20 +372,27 @@ async function init() {
     const res = await fetch(SHEET_URL);
     const text = await res.text();
     const json = JSON.parse(text.replace("/*O_o*/\ngoogle.visualization.Query.setResponse(", "").replace(");", ""));
-    allRows = json.table.rows
-      .filter(r => r.c[0]?.v && r.c[1]?.v)
-      .map(r => ({
-        Date: parseGvizDate(r.c[0].v),
-        Amount: Number(r.c[1].v),
-        Category: r.c[2]?.v || "Other",
-        Description: r.c[3]?.v || "",
-        Type: (r.c[5]?.v != null) ? String(r.c[5].v).trim() : "Expense"
-      }));
+    allRows = [];
+    json.table.rows.forEach((r, i) => {
+      try {
+        if (!r.c[0]?.v || !r.c[1]?.v) return; // skip empty rows
+        allRows.push({
+          Date: parseGvizDate(r.c[0].v),
+          Amount: Number(r.c[1].v),
+          Category: r.c[2]?.v != null ? String(r.c[2].v).trim() : "Other",
+          Description: r.c[3]?.v != null ? String(r.c[3].v).trim() : "",
+          Type: r.c[5]?.v != null ? String(r.c[5].v).trim() : "Expense"
+        });
+      } catch(rowErr) {
+        console.error(`Row ${i} parse failed:`, rowErr.message, JSON.stringify(r.c));
+      }
+    });
     document.getElementById('main-loader').style.display = 'none';
     renderDropdownOptions();
     switchView(currentView);
   } catch(e) {
-    document.getElementById('main-loader').innerHTML = `⚠️ Connection interrupted: ${e.message}`;
+    console.error("init() failed:", e);
+    document.getElementById('main-loader').innerHTML = `⚠️ Connection interrupted: ${e.message}<br><small style="color:#aaa;font-size:11px;">Check browser console (F12) for row details.</small>`;
   }
 }
 
