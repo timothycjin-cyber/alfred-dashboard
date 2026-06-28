@@ -35,21 +35,27 @@ https://docs.google.com/spreadsheets/d/19_C3gFlY7hDjGm87k3Uke63_Tgg6TQPl6xLiGZvu
 | 3 | Description | String |
 | 4 | Source | `telegram` or `telegram-image` |
 | 5 | Type | `Expense` or `Income` |
+| 6 | UID | Short unique ID — 12-char hex (e.g. `mqx393vfm58v`) |
 
 > ⚠️ Date parsing quirk: GViz returns dates as `Date(2026,5,28)` — month is **0-indexed**. JS parser adds +1 when formatting to `YYYY-MM-DD`. This is a known source of off-by-one bugs.
 
 ---
 
-## How Data Is Written (Write Path — IN PROGRESS)
+## How Data Is Written (Write Path)
 ```
 Dashboard (index.html)
   → fetch() POST to Google Apps Script Web App URL
   → Apps Script appends / edits / deletes row in Sheet1
+
+Telegram Bot (main.py)
+  → gspread writes directly to Sheet1
+  → Generates its own UID via Python uuid library
 ```
 
 **Apps Script:** attached to the Google Sheet via Extensions → Apps Script.
 **Deployment:** Published as a Web App (Execute as: Me, Access: Anyone).
-**Web App URL:** _[paste your deployed URL here when set up]_
+**Web App URL:** `https://script.google.com/macros/s/AKfycbzxRLfHCAbCspXIWSRt1xVAbLnNPlhiHHaWpTHGB23N1wkoMU74nHifMT9prU3rM4m6/exec`
+**Secret key:** `8891` (passed as `key` field in POST body)
 
 ---
 
@@ -60,7 +66,7 @@ Dashboard (index.html)
 | Charts | Chart.js 4.4.1 (CDN) |
 | Data read | GViz JSON endpoint (public, no auth) |
 | Data write | Google Apps Script Web App (POST) |
-| Auth for writes | Shared secret header `X-Alfred-Key` (pending) |
+| Auth for writes | Shared secret — `key: "8891"` in POST body |
 
 ---
 
@@ -69,7 +75,7 @@ Dashboard (index.html)
 |---|---|
 | `SHEET_ID` | Google Sheet ID |
 | `SHEET_URL` | Full GViz fetch URL |
-| `allRows` | All parsed rows from Sheet |
+| `allRows` | All parsed rows from Sheet, each row now includes `UID` field |
 | `activeMonth` / `activeYear` | Currently selected month filter |
 | `currentView` | `'home'` or `'analytics'` |
 | `donutChart` / `lineChart` | Chart.js instances (destroyed and recreated on tab switch) |
@@ -111,80 +117,52 @@ Analytics View
 - Animated number counters
 - Cumulative spend line chart (this month vs last month comparison)
 - Donut chart + category breakdown bars
+- UID column G added to Sheet1
+- Apps Script deployed and tested — `add` action confirmed working
+- `index.html` updated to read UID from GViz col index 6 into `allRows`
+- Row identification problem solved via Option B (UID)
 
 ---
 
 ## What's Pending ❌
 
-### 1. Floating Action Button (FAB) — New Entry
+### 1. Update main.py (Telegram Bot) — UID on bot entries
+- [ ] Add `import uuid` to imports
+- [ ] Update `append_row()` to generate and write UID to col G
+- [ ] Deploy to Railway and test via Telegram
+
+### 2. Floating Action Button (FAB) — New Entry
 - [ ] "+" button fixed to bottom-right corner
-- [ ] Opens a modal/sheet with fields: Date, Amount, Category, Description, Type (Expense/Income)
-- [ ] On submit → POST to Apps Script Web App → appends row to Sheet1
-- [ ] On success → refresh data (`init()`)
+- [ ] Opens a modal with fields: Date, Amount, Category, Description, Type (Expense/Income)
+- [ ] On submit → POST to Apps Script with `action: "add"` and `key: "8891"`
+- [ ] On success → refresh data via `init()`
 
-### 2. Edit / Delete per Transaction Row
+### 3. Edit / Delete per Transaction Row
 - [ ] Tap a transaction row → opens edit modal pre-filled with that row's data
-- [ ] Edit: PUT/POST to Apps Script with row identifier → Apps Script finds and updates row
-- [ ] Delete: POST to Apps Script with row identifier → Apps Script deletes row
-
-### 3. Apps Script Web App
-- [ ] `doPost(e)` handler with actions: `add`, `edit`, `delete`
-- [ ] Secured with shared secret: check `e.parameter.key` or header `X-Alfred-Key`
-- [ ] Deployed as Web App (Execute as Me, Access: Anyone)
+- [ ] Edit: POST to Apps Script with `action: "edit"`, `uid`, and updated fields
+- [ ] Delete: POST to Apps Script with `action: "delete"` and `uid`
 
 ---
 
-## ⚠️ Known Problem: Row Identification for Edit/Delete
+## Apps Script (Deployed — DO NOT REDEPLOY UNLESS CHANGES MADE)
+Full script is live. Key functions:
+- `doPost(e)` — routes `add`, `edit`, `delete` actions
+- `handleAdd()` — appends row, auto-generates UID via `generateUID()`
+- `handleEdit()` — finds row by UID, updates fields (leaves Source + UID unchanged)
+- `handleDelete()` — finds row by UID, deletes entire row
+- `backfillUIDs()` — one-time manual function to add UIDs to existing rows (run from editor only)
+- `findRowByUID()` — scans col G for matching UID, returns row index
+- `generateUID()` — `Date.now().toString(36) + random` — short alphanumeric
 
-**The core issue:** There is no unique ID column in the sheet. Rows can only be found by matching field values.
-
-**Why date-matching alone fails:**
-- GViz returns dates as `Date(Y,M,D)` (0-indexed month)
-- The sheet stores dates as `YYYY-MM-DD` strings
-- Mismatches between these two formats cause the Apps Script row lookup to silently fail — this was the root cause of edit/delete not working in the previous attempt
-
-**Two options to solve this (decide at start of session):**
-
-| Option | Approach | Pro | Con |
-|---|---|---|---|
-| A | Match by `Date + Amount + Description` concat | No schema change | Fragile if duplicates exist |
-| B | Add a `UID` column to Sheet1 (e.g. timestamp on append) | Reliable, clean | Requires bot (`main.py`) and Apps Script to both write UID |
-
-> Recommended: **Option B** — add a hidden `UID` column (col G) populated by Apps Script on every `add`. Dashboard reads it from GViz (col index 6) and passes it back on edit/delete. Bot doesn't need to change.
-
----
-
-## Apps Script Skeleton (to be built)
-```javascript
-function doPost(e) {
-  const SECRET = "your-shared-secret-here";
-  const params = JSON.parse(e.postData.contents);
-  if (params.key !== SECRET) return response({error: "Unauthorized"});
-
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
-  const action = params.action;
-
-  if (action === "add") {
-    sheet.appendRow([params.date, params.amount, params.category,
-                     params.description, "dashboard", params.type]);
-  } else if (action === "edit") {
-    // Find row by UID (col 7) or by date+amount+desc concat
-  } else if (action === "delete") {
-    // Find row by UID and delete
-  }
-  return response({success: true});
-}
-
-function response(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-```
+> ⚠️ If you ever need to update the Apps Script, click **Deploy → Manage deployments → Edit** and create a new version. Do NOT create a new deployment — it gives a different URL.
 
 ---
 
 ## How to Start a Session
 1. Paste this file as your first message
 2. Paste the current `index.html`
-3. State what you're building today (FAB, edit modal, Apps Script, or UID column)
-4. Decide: Option A or Option B for row identification before writing any code
+3. State what you're building today
+4. Recommended order for next sessions:
+   - First: update `main.py` with UID (quick, 2-line change)
+   - Then: build FAB
+   - Then: build edit/delete modal
