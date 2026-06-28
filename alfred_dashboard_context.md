@@ -121,23 +121,19 @@ Analytics View
 - Apps Script deployed and tested — `add` action confirmed working
 - `index.html` updated to read UID from GViz col index 6 into `allRows`
 - Row identification problem solved via Option B (UID)
+- - main.py updated with UUID generation — bot entries now write UID to col G automatically
 
 ---
 
 ## What's Pending ❌
 
-### 1. Update main.py (Telegram Bot) — UID on bot entries
-- [ ] Add `import uuid` to imports
-- [ ] Update `append_row()` to generate and write UID to col G
-- [ ] Deploy to Railway and test via Telegram
-
-### 2. Floating Action Button (FAB) — New Entry
+### 1. Floating Action Button (FAB) — New Entry
 - [ ] "+" button fixed to bottom-right corner
 - [ ] Opens a modal with fields: Date, Amount, Category, Description, Type (Expense/Income)
 - [ ] On submit → POST to Apps Script with `action: "add"` and `key: "8891"`
 - [ ] On success → refresh data via `init()`
 
-### 3. Edit / Delete per Transaction Row
+### 2. Edit / Delete per Transaction Row
 - [ ] Tap a transaction row → opens edit modal pre-filled with that row's data
 - [ ] Edit: POST to Apps Script with `action: "edit"`, `uid`, and updated fields
 - [ ] Delete: POST to Apps Script with `action: "delete"` and `uid`
