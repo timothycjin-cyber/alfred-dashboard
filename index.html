@@ -491,7 +491,8 @@ async function init() {
           Amount: Number(r.c[1].v),
           Category: r.c[2]?.v || "Other",
           Description: r.c[3]?.v || "",
-          Type: r.c[5]?.v ? String(r.c[5].v).trim() : "Expense"
+          Type: r.c[5]?.v ? String(r.c[5].v).trim() : "Expense",
+          UID: r.c[6]?.v ? String(r.c[6].v).trim() : ""
         };
       });
       
